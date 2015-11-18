@@ -1,0 +1,23 @@
+diff --git a/ArduCopter/system.pde b/ArduCopter/system.pde
+index 5aa9463..0ae06a3 100644
+--- a/ArduCopter/system.pde
++++ b/ArduCopter/system.pde
+@@ -369,7 +369,7 @@ static void update_auto_armed()
+         }
+ #else
+         // if motors are armed and throttle is above zero auto_armed should be true
+-        if(motors.armed() && !ap.throttle_zero) {
++        if(motors.armed()/* && !ap.throttle_zero*/) {
+             set_auto_armed(true);
+         }
+ #endif // HELI_FRAME
+diff --git a/Tools/autotest/copter_params.parm b/Tools/autotest/copter_params.parm
+index 710b72a..cdbc679 100644
+--- a/Tools/autotest/copter_params.parm
++++ b/Tools/autotest/copter_params.parm
+@@ -1,4 +1,5 @@
+ FRAME		0
++ARMING_CHECK 0
+ MAG_ENABLE	1
+ FS_THR_ENABLE   1
+ BATT_MONITOR    4

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>aira_iot</name>
+  <version>0.0.0</version>
+  <description>The AIRA Internet of Things</description>
+  <maintainer email="mail@akru.me">Alexander Krupenkin</maintainer>
+  <!-- Commonly used license strings: -->
+  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
+  <license>MIT</license>
+  <!-- Url tags are optional, but mutiple are allowed, one per tag -->
+  <!-- Optional attribute type can be: website, bugtracker, or repository -->
+  <!-- Example: -->
+  <!-- <url type="website">http://wiki.ros.org/AIRA_IoT</url> -->
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>mavros</build_depend>
+  <run_depend>mavros</run_depend>
+</package>

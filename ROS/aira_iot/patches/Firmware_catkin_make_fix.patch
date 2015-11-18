@@ -1,0 +1,243 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6b395b6..6532e86 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -149,11 +149,11 @@ set(target_name "${OS}-${BOARD}-${LABEL}")
+ message(STATUS "${target_name}")
+ 
+ # switch to ros CMake file if building ros
+-if (${OS} STREQUAL "ros")
++if (TRUE)
+ 	include("cmake/ros-CMakeLists.txt")
+ else()  # otherwise use the rest of this file
+ 
+-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
++list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+ set(config_module "configs/${CONFIG}")
+ include(${config_module})
+ 
+diff --git a/cmake/common/px4_base.cmake b/cmake/common/px4_base.cmake
+index 8a3a844..c52a896 100644
+--- a/cmake/common/px4_base.cmake
++++ b/cmake/common/px4_base.cmake
+@@ -137,13 +137,13 @@ function(px4_add_git_submodule)
+ 		ARGN ${ARGN})
+ 	string(REPLACE "/" "_" NAME ${PATH})
+ 	add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/git_init_${NAME}.stamp
+-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
++		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Firmware
+ 		COMMAND git submodule init ${PATH}
+ 		COMMAND touch ${CMAKE_BINARY_DIR}/git_init_${NAME}.stamp
+-		DEPENDS ${CMAKE_SOURCE_DIR}/.gitmodules
++		DEPENDS ${CMAKE_SOURCE_DIR}/Firmware/.gitmodules
+ 		)
+ 	add_custom_target(${TARGET}
+-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
++		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Firmware
+ 		COMMAND git submodule update --recursive ${PATH}
+ 		DEPENDS ${CMAKE_BINARY_DIR}/git_init_${NAME}.stamp
+ 		)
+@@ -351,7 +351,7 @@ function(px4_generate_messages)
+ 			-e msg/templates/uorb
+ 			-t ${CMAKE_BINARY_DIR}/topics_temporary
+ 		DEPENDS ${DEPENDS} ${MSG_FILES}
+-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
++		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Firmware
+ 		COMMENT "Generating uORB topic headers"
+ 		VERBATIM
+ 		)
+@@ -373,7 +373,7 @@ function(px4_generate_messages)
+ 			-t ${CMAKE_BINARY_DIR}/multi_topics_temporary/${OS}
+ 			-p "px4_"
+ 		DEPENDS ${DEPENDS} ${MSG_FILES}
+-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
++		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Firmware
+ 		COMMENT "Generating uORB topic multi headers for ${OS}"
+ 		VERBATIM
+ 		)
+@@ -428,7 +428,7 @@ function(px4_add_upload)
+ 	px4_join(OUT serial_ports LIST "${serial_ports}" GLUE ",")
+ 	add_custom_target(${OUT}
+ 		COMMAND ${PYTHON_EXECUTABLE}
+-			${CMAKE_SOURCE_DIR}/Tools/px_uploader.py --port ${serial_ports} ${BUNDLE}
++			${CMAKE_SOURCE_DIR}/Firmware/Tools/px_uploader.py --port ${serial_ports} ${BUNDLE}
+ 		DEPENDS ${BUNDLE}
+ 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+ 		COMMENT "uploading ${BUNDLE}"
+@@ -605,20 +605,20 @@ function(px4_add_common_flags)
+ 		)
+ 
+ 	set(added_include_dirs
+-		${CMAKE_SOURCE_DIR}/src
++		${CMAKE_SOURCE_DIR}/Firmware/src
+ 		${CMAKE_BINARY_DIR}
+ 		${CMAKE_BINARY_DIR}/src
+-		${CMAKE_SOURCE_DIR}/src/modules
+-		${CMAKE_SOURCE_DIR}/src/include
+-		${CMAKE_SOURCE_DIR}/src/lib
+-		${CMAKE_SOURCE_DIR}/src/platforms
++		${CMAKE_SOURCE_DIR}/Firmware/src/modules
++		${CMAKE_SOURCE_DIR}/Firmware/src/include
++		${CMAKE_SOURCE_DIR}/Firmware/src/lib
++		${CMAKE_SOURCE_DIR}/Firmware/src/platforms
+ 		# TODO Build/versioning was in Makefile,
+ 		# do we need this, how does it work with cmake
+-		${CMAKE_SOURCE_DIR}/src/drivers/boards/${BOARD}
++		${CMAKE_SOURCE_DIR}/Firmware/src/drivers/boards/${BOARD}
+ 		${CMAKE_BINARY_DIR}
+ 		${CMAKE_BINARY_DIR}/src/modules/px4_messages
+ 		${CMAKE_BINARY_DIR}/src/modules
+-		${CMAKE_SOURCE_DIR}/mavlink/include/mavlink
++		${CMAKE_SOURCE_DIR}/Firmware/mavlink/include/mavlink
+ 		)
+ 
+ 	list(APPEND added_include_dirs
+@@ -703,12 +703,12 @@ function(px4_create_git_hash_header)
+ 		COMMAND git rev-parse HEAD
+ 		OUTPUT_VARIABLE git_desc
+ 		OUTPUT_STRIP_TRAILING_WHITESPACE
+-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
++		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Firmware
+ 		)
+ 	message(STATUS "GIT_DESC = ${git_desc}")
+ 	set(git_desc_short)
+ 	string(SUBSTRING ${git_desc} 1 16 git_desc_short)
+-	configure_file(${CMAKE_SOURCE_DIR}/cmake/templates/build_git_version.h.in ${HEADER} @ONLY)
++	configure_file(${CMAKE_SOURCE_DIR}/Firmware/cmake/templates/build_git_version.h.in ${HEADER} @ONLY)
+ endfunction()
+ 
+ #=============================================================================
+@@ -735,12 +735,12 @@ function(px4_generate_parameters_xml)
+ 		ONE_VALUE OUT BOARD
+ 		REQUIRED OUT BOARD
+ 		ARGN ${ARGN})
+-	set(path ${CMAKE_SOURCE_DIR}/src)
++	set(path ${CMAKE_SOURCE_DIR}/Firmware/src)
+ 	file(GLOB_RECURSE param_src_files
+-		${CMAKE_SOURCE_DIR}/src/*params.c
++		${CMAKE_SOURCE_DIR}/Firmware/src/*params.c
+ 		)
+ 	add_custom_command(OUTPUT ${OUT}
+-		COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/Tools/px_process_params.py
++		COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/Firmware/Tools/px_process_params.py
+ 			-s ${path} --board CONFIG_ARCH_${BOARD} --xml --inject-xml
+ 		DEPENDS ${param_src_files}
+ 		)
+@@ -778,7 +778,7 @@ function(px4_generate_parameters_source)
+ 	set_source_files_properties(${generated_files}
+ 		PROPERTIES GENERATED TRUE)
+ 	add_custom_command(OUTPUT ${generated_files}
+-		COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/Tools/px_generate_params.py ${XML}
++		COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/Firmware/Tools/px_generate_params.py ${XML}
+ 		DEPENDS ${XML} ${DEPS}
+ 		)
+ 	set(${OUT} ${generated_files} PARENT_SCOPE)
+@@ -809,10 +809,10 @@ function(px4_generate_airframes_xml)
+ 		ONE_VALUE OUT BOARD
+ 		REQUIRED OUT BOARD
+ 		ARGN ${ARGN})
+-	set(process_airframes ${CMAKE_SOURCE_DIR}/Tools/px_process_airframes.py)
++	set(process_airframes ${CMAKE_SOURCE_DIR}/Firmware/Tools/px_process_airframes.py)
+ 	add_custom_command(OUTPUT ${OUT}
+ 		COMMAND ${PYTHON_EXECUTABLE} ${process_airframes}
+-			-a ${CMAKE_SOURCE_DIR}/ROMFS/px4fmu_common/init.d
++			-a ${CMAKE_SOURCE_DIR}/Firmware/ROMFS/px4fmu_common/init.d
+ 			--board CONFIG_ARCH_BOARD_${BOARD} --xml
+ 		)
+ 	set(${OUT} ${${OUT}} PARENT_SCOPE)
+diff --git a/cmake/nuttx/px4_impl_nuttx.cmake b/cmake/nuttx/px4_impl_nuttx.cmake
+index af7391f..db32235 100644
+--- a/cmake/nuttx/px4_impl_nuttx.cmake
++++ b/cmake/nuttx/px4_impl_nuttx.cmake
+@@ -95,9 +95,9 @@ function(px4_nuttx_add_firmware)
+ 
+ 	add_custom_command(OUTPUT ${OUT}
+ 		COMMAND ${OBJCOPY} -O binary ${EXE} ${EXE}.bin
+-		COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/Tools/px_mkfw.py
+-			--prototype ${CMAKE_SOURCE_DIR}/Images/${BOARD}.prototype
+-			--git_identity ${CMAKE_SOURCE_DIR}
++		COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/Firmware/Tools/px_mkfw.py
++			--prototype ${CMAKE_SOURCE_DIR}/Firmware/Images/${BOARD}.prototype
++			--git_identity ${CMAKE_SOURCE_DIR}/Firmware
+ 			${extra_args}
+ 			--image ${EXE}.bin > ${OUT}
+ 		DEPENDS ${EXE}
+@@ -156,7 +156,7 @@ function(px4_nuttx_generate_builtin_commands)
+ 			math(EXPR command_count "${command_count}+1")
+ 		endif()
+ 	endforeach()
+-	configure_file(${CMAKE_SOURCE_DIR}/cmake/nuttx/builtin_commands.c.in
++	configure_file(${CMAKE_SOURCE_DIR}/Firmware/cmake/nuttx/builtin_commands.c.in
+ 		${OUT})
+ endfunction()
+ 
+@@ -195,13 +195,13 @@ function(px4_nuttx_add_export)
+ 
+ 	# patch
+ 	add_custom_target(__nuttx_patch_${CONFIG})
+-	file(GLOB nuttx_patches RELATIVE ${CMAKE_SOURCE_DIR}
+-	    ${CMAKE_SOURCE_DIR}/nuttx-patches/*.patch)
++	file(GLOB nuttx_patches RELATIVE ${CMAKE_SOURCE_DIR}/Firmware
++	    ${CMAKE_SOURCE_DIR}/Firmware/nuttx-patches/*.patch)
+ 	foreach(patch ${nuttx_patches})
+ 		string(REPLACE "/" "_" patch_name "${patch}-${CONFIG}")
+ 	    message(STATUS "nuttx-patch: ${patch}")
+ 		add_custom_command(OUTPUT nuttx_patch_${patch_name}.stamp
+-			COMMAND ${PATCH} -p0 -N  < ${CMAKE_SOURCE_DIR}/${patch}
++			COMMAND ${PATCH} -p0 -N  < ${CMAKE_SOURCE_DIR}/Firmware/${patch}
+ 			COMMAND ${TOUCH} nuttx_patch_${patch_name}.stamp
+ 			DEPENDS ${DEPENDS}
+ 			)
+@@ -214,7 +214,7 @@ function(px4_nuttx_add_export)
+ 	add_custom_command(OUTPUT nuttx_copy_${CONFIG}.stamp
+ 		COMMAND ${MKDIR} -p ${CMAKE_BINARY_DIR}/${CONFIG}
+ 		COMMAND ${MKDIR} -p ${nuttx_src}
+-		COMMAND ${CP} -a ${CMAKE_SOURCE_DIR}/NuttX/. ${nuttx_src}/
++		COMMAND ${CP} -a ${CMAKE_SOURCE_DIR}/Firmware/NuttX/. ${nuttx_src}/
+ 		COMMAND ${RM} -rf ${nuttx_src}/.git
+ 		COMMAND ${TOUCH} nuttx_copy_${CONFIG}.stamp
+ 		DEPENDS ${DEPENDS})
+@@ -222,11 +222,11 @@ function(px4_nuttx_add_export)
+ 		DEPENDS nuttx_copy_${CONFIG}.stamp __nuttx_patch_${CONFIG})
+ 
+ 	# export
+-	file(GLOB_RECURSE config_files ${CMAKE_SOURCE_DIR}/nuttx-configs/${CONFIG}/*)
++	file(GLOB_RECURSE config_files ${CMAKE_SOURCE_DIR}/Firmware/nuttx-configs/${CONFIG}/*)
+ 	add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/${CONFIG}.export
+ 		COMMAND ${ECHO} Configuring NuttX for ${CONFIG}
+ 		COMMAND ${MAKE} --no-print-directory -C${nuttx_src}/nuttx -r --quiet distclean
+-		COMMAND ${CP} -r ${CMAKE_SOURCE_DIR}/nuttx-configs/${CONFIG} ${nuttx_src}/nuttx/configs
++		COMMAND ${CP} -r ${CMAKE_SOURCE_DIR}/Firmware/nuttx-configs/${CONFIG} ${nuttx_src}/nuttx/configs
+ 		COMMAND cd ${nuttx_src}/nuttx/tools && ./configure.sh ${CONFIG}/nsh
+ 		COMMAND ${ECHO} Exporting NuttX for ${CONFIG}
+ 		COMMAND ${MAKE} --no-print-directory --quiet -C ${nuttx_src}/nuttx -j${THREADS} -r CONFIG_ARCH_BOARD=${CONFIG} export > /dev/null
+@@ -312,15 +312,15 @@ function(px4_nuttx_add_romfs)
+ 		ARGN ${ARGN})
+ 
+ 	set(romfs_temp_dir ${CMAKE_BINARY_DIR}/tmp/${ROOT})
+-	set(romfs_src_dir ${CMAKE_SOURCE_DIR}/${ROOT})
+-	set(romfs_autostart ${CMAKE_SOURCE_DIR}/Tools/px_process_airframes.py)
+-	set(romfs_pruner ${CMAKE_SOURCE_DIR}/Tools/px_romfs_pruner.py)
+-	set(bin_to_obj ${CMAKE_SOURCE_DIR}/cmake/nuttx/bin_to_obj.py)
++	set(romfs_src_dir ${CMAKE_SOURCE_DIR}/Firmware/${ROOT})
++	set(romfs_autostart ${CMAKE_SOURCE_DIR}/Firmware/Tools/px_process_airframes.py)
++	set(romfs_pruner ${CMAKE_SOURCE_DIR}/Firmware/Tools/px_romfs_pruner.py)
++	set(bin_to_obj ${CMAKE_SOURCE_DIR}/Firmware/cmake/nuttx/bin_to_obj.py)
+ 	set(extras_dir ${CMAKE_CURRENT_BINARY_DIR}/extras)
+ 
+ 	file(GLOB_RECURSE romfs_src_files ${romfs_src_dir} ${romfs_src_dir}/*)
+ 
+-	set(cmake_test ${CMAKE_SOURCE_DIR}/cmake/test/cmake_tester.py)
++	set(cmake_test ${CMAKE_SOURCE_DIR}/Firmware/cmake/test/cmake_tester.py)
+ 
+ 	
+ 	set(extras)
+@@ -349,7 +349,7 @@ function(px4_nuttx_add_romfs)
+ 		#COMMAND cmake -E remove_directory ${romfs_temp_dir}
+ 		COMMAND ${PYTHON_EXECUTABLE} ${bin_to_obj}
+ 			--ld ${LD} --c_flags ${CMAKE_C_FLAGS}
+-			--include_path "${CMAKE_SOURCE_DIR}/src/include"
++			--include_path "${CMAKE_SOURCE_DIR}/Firmware/src/include"
+ 			--c_compiler ${CMAKE_C_COMPILER}
+ 			--nm ${NM} --objcopy ${OBJCOPY}
+ 			--obj romfs.o
