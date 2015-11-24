@@ -66,7 +66,7 @@ contract gpsdestination {
         e.destinationLatitude = _destinationLatitude;
         e.actualBefore = now + estimatesActualBefore;
         customerEstimatesOf[msg.sender] = estimateID;
-        NewEstimate(estimateID, _destinationLongitude, _destinationLongitude, homebaseLongitude, homebaseLatitude);
+        NewEstimate(estimateID, _destinationLongitude, _destinationLatitude, homebaseLongitude, homebaseLatitude);
         return estimateID;
     }
 
