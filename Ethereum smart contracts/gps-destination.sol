@@ -3,6 +3,8 @@ contract gpsdestination {
     address public currentCustomer;
     string public currentLongitude;
     string public currentLatitude;
+    string public homebaseLongitude;
+    string public homebaseLatitude;
     string public destinationLongitude;
     string public destinationLatitude;
     uint public estimatesActualBefore;
@@ -24,24 +26,26 @@ contract gpsdestination {
     /* Events */
 
     event NewGPSCoordinates(string destinationLongitude, string destinationLatitude);
-    event droneComeback(string currentLongitude, string currentLatitude);
-    event NewEstimate(uint estimateID);
+    event DroneComeback(string currentLongitude, string currentLatitude);
+    event NewEstimate(uint estimateID, string destinationLongitude, string destinationLatitude, string homebaseLongitude, string homebaseLatitude);
 
     /*Initial */
-    function gpsdestination(string _currentLongitude, string _currentLatitude, uint _estimatesActualBefore) {
+    function gpsdestination(string _homebaseLongitude, string _homebaseLatitude, uint _estimatesActualBefore) {
         dronAccount = msg.sender;
-        currentLongitude = _currentLongitude;
-        currentLatitude = _currentLatitude;
+        currentLongitude = _homebaseLongitude;
+        currentLatitude = _homebaseLatitude;
         estimatesActualBefore = _estimatesActualBefore * 1 minutes;
     }
     
     /* Drone functions */
-    function homebase(string _currentLongitude, string _currentLatitude) returns(bool result) {
+    function homebase(string _homebaseLongitude, string _homebaseLatitude) returns(bool result) {
         if(msg.sender==dronAccount) {
-        currentLongitude = _currentLongitude;
-        currentLatitude = _currentLatitude;
+        homebaseLongitude = _homebaseLongitude;
+        homebaseLatitude = _homebaseLatitude;
         return true;}
     }
+
+
 
     function setEstimateCost(uint _estimateID, uint _cost) returns(bool result) {
         if(msg.sender==dronAccount) {
@@ -62,7 +66,7 @@ contract gpsdestination {
         e.destinationLatitude = _destinationLatitude;
         e.actualBefore = now + estimatesActualBefore;
         customerEstimatesOf[msg.sender] = estimateID;
-        NewEstimate(estimateID);
+        NewEstimate(estimateID, _destinationLongitude, _destinationLongitude, homebaseLongitude, homebaseLatitude);
         return estimateID;
     }
 
