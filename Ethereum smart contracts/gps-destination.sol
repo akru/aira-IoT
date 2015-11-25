@@ -18,6 +18,7 @@ contract gpsdestination {
         string destinationLongitude;
         string destinationLatitude;
         uint cost;
+        uint distance;
         uint actualBefore; 
     }
 
@@ -26,9 +27,10 @@ contract gpsdestination {
     /* Events */
 
     event NewGPSCoordinates(string destinationLongitude, string destinationLatitude);
-    event DroneComeback(string currentLongitude, string currentLatitude);
+    event DroneComeback(string currentLongitude, string currentLatitude, uint compliteEstimateID);
     event NewEstimate(uint estimateID, string destinationLongitude, string destinationLatitude, string homebaseLongitude, string homebaseLatitude);
-
+    event EstimateCostReceive(uint estimateID, uint cost, uint distance);
+    
     /*Initial */
     function gpsdestination(string _homebaseLongitude, string _homebaseLatitude, uint _estimatesActualBefore) {
         dronAccount = msg.sender;
@@ -38,26 +40,27 @@ contract gpsdestination {
     }
     
     /* Drone functions */
-    function homebase(string _homebaseLongitude, string _homebaseLatitude) returns(bool result) {
+    function homebase(string _currentLongitude, string _currentLatitude) returns(bool result) {
         if(msg.sender==dronAccount) {
-        homebaseLongitude = _homebaseLongitude;
-        homebaseLatitude = _homebaseLatitude;
+        currentLongitude = _currentLongitude;
+        currentLatitude = _currentLatitude;
+        uint compliteEstimateID = customerEstimatesOf[currentCustomer];
+        currentCustomer = 0x0;
+        DroneComeback(currentLongitude, currentLatitude, compliteEstimateID);
         return true;}
     }
 
-
-
-    function setEstimateCost(uint _estimateID, uint _cost) returns(bool result) {
+    function setEstimateCost(uint _estimateID, uint _cost, uint _distance) returns(bool result) {
         if(msg.sender==dronAccount) {
             Estimate e = estimates[_estimateID];
             e.cost = _cost;
+            e.distance = _distance;
+            EstimateCostReceive(_estimateID, _cost, _distance);
             return true;
         }
     }
 
-
     /* Customer functions */
-
     function setNewEstimate(string _destinationLongitude, string _destinationLatitude) returns(uint estimateID) {
         estimateID = estimates.length++;
         Estimate e = estimates[estimateID];
@@ -80,6 +83,6 @@ contract gpsdestination {
         destinationLatitude = e.destinationLatitude;
         NewGPSCoordinates(destinationLongitude, destinationLatitude);
         return true;
-        }
+        } else msg.sender.send(msg.value);
     }
 }
