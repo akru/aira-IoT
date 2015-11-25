@@ -33,6 +33,11 @@ class GEthEvent:
         print 'DEBUG :: ', cmd
         self._geth.sendline(cmd)
 
+    def setHomebase(self, longitude, latitude):
+        cmd = 'gps.homebase.sendTransaction(\'{0}\', \'{1}\', {{from: eth.accounts[0], gas: 500000}})    '.format(longitude, latitude)
+        print 'DEBUG :: ', cmd
+        self._geth.sendline(cmd)
+
 def geth_event_loop():
     geth = pexpect.spawn('./geth_attach.sh')
     geth.sendline("loadScript('gps_listener.js')")

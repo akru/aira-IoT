@@ -23,6 +23,9 @@ def rtl():
     return w
 
 def mission_planner(lat0, lon0, lat, lon):
-    return [ waypoint(lat0, lon0, 20, 5)
+    takeoff = waypoint(lat0, lon0, 10, 5)
+    takeoff.is_current = True
+    return [ takeoff
+           , waypoint(lat0, lon0, 50, 10)
            , waypoint(lat,  lon,  50, 10)
            , rtl() ]

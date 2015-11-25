@@ -3,8 +3,29 @@
 from mission_planner import mission_planner
 from geth_event import geth_event_loop
 from quad_commander import *
-from rospy import init_node
+
 from math import atan2, sin, cos, sqrt, pi
+from rospy import init_node, sleep, Subscriber
+from sensor_msgs.msg import NavSatFix
+from mavros_msgs.msg import State
+import threading
+
+is_armed_lock = threading.Lock() 
+is_armed = False
+currentPosition_lock = threading.Lock()
+currentPosition = (0,0)
+
+def quad_position(msg):
+    currentPosition_lock.acquire()
+    global currentPosition
+    currentPosition = (msg.longitude, msg.latitude)
+    currentPosition_lock.release()
+
+def quad_state(msg):
+    is_armed_lock.acquire()
+    global is_armed
+    is_armed = msg.armed
+    is_armed_lock.release()
 
 def path_length(lat1, lon1, lat2, lon2):
     # Going to radians
@@ -27,14 +48,22 @@ def path_length(lat1, lon1, lat2, lon2):
 def main():
     ''' The main routine '''
     init_node('aira_quad')
+    Subscriber('/mavros/global_position/global', NavSatFix, quad_position) 
+    Subscriber('/mavros/state', State, quad_state)
+    spin_thread = threading.Thread(target = rospy.spin)
+    spin_thread.start()
     # For every coords received by `geth`
     for e in geth_event_loop():
         if e.event_type() == e.GPS_EVENT:
-            lat = e.gps_lat
-            lon = e.gps_lon
+            lat = e.destination['lat']
+            lon = e.destination['lon']
             print('Received GPS target: {0}, {1}'.format(lat, lon))
+            # Store homebase
+            currentPosition_lock.acquire()
+            homebase = currentPosition
+            currentPosition_lock.release()
             # Write a simple mission
-            waypoints = mission_planner(-35.363348, 149.165161, lat, lon)
+            waypoints = mission_planner(homebase[1], homebase[0], lat, lon)
             push_mission(waypoints)
             print('Mission created')
             # Set manual mode
@@ -43,6 +72,19 @@ def main():
             arming()
             # Set autopilot mode
             set_mode('AUTO')
+            print('Flight!')
+            # Wainting for arming
+            sleep(5)
+            def get_armed():
+                is_armed_lock.acquire()
+                a = is_armed
+                is_armed_lock.release()
+                return a
+            while get_armed():
+                sleep(0.5)
+            print('Mission complete, set homebase {0}'.format(homebase))
+            e.setHomebase(homebase[0], homebase[1])
+
         elif e.event_type() == e.ESTIMATE_EVENT:
             print('Received estimation request: {0}'.format(e.estimate))
             length = path_length(e.estimate['from']['lat']

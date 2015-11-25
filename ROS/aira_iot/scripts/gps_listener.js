@@ -2,7 +2,7 @@ loadScript('gps_contract.js');
 var e = [
   gps.NewGPSCoordinates({}, '', function(err, r){
     if (!err)
-      console.log('GPS ' + r.args.longitude_dest + ' ' + r.args.latitude_dest);
+      console.log('GPS ' + r.args.destinationLongitude + ' ' + r.args.destinationLatitude);
   }),
   gps.NewEstimate({}, '', function(err, r){
     if (!err)
