@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <node name="path_estimator"  pkg="dron_ros_tutorial" type="path_estimator.py"  />
+    <node name="state_publisher" pkg="dron_ros_tutorial" type="state_publisher.py" />
+    <node name="dron_controller" pkg="dron_ros_tutorial" type="quad_controller.py" />
+</launch>
