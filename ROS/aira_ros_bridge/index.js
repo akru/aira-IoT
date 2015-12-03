@@ -1,1 +1,1 @@
-module.exports = reqire('./lib/aira_bridge.js');
+module.exports = require('./lib/aira_bridge.js');

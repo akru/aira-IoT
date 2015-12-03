@@ -18,4 +18,5 @@
 	</include>
 	
     <include file="$(find dron_ros_tutorial)/launch/controller.launch" />
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
 </launch>

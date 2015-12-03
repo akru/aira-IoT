@@ -1,15 +1,10 @@
 module.exports = bridge
 
 /*** Libraries import ***/
-var Web3 = require('web3');
+var Web3   = require('web3');
 var ROSLIB = require('roslib');
-var ABI = require('./abi');
-
-/*** Message definition ***/
-var ROSMSG = {}
-// TODO: Message converter autoreg
-ROSMSG['std_msgs/String'] = require('./std_msgs/String');
-ROSMSG['std_msgs/Int64']  = require('./std_msgs/Int64');
+var ABI    = require('./abi');
+var ROSMSG = require('./rosmsg');
 
 /*** Libraries init ***/
 var web3 = new Web3();
@@ -49,10 +44,10 @@ function bridge(contract_address) {
             if (!e) {
                 // Take message by message address received from event
                 var msg_type = eth_topic.messageType();
-                var msg_abi = ROSMSG[msg_type].abi;
-                var msg = web3.eth.contract(msg_abi).at(r.args.msg);
+                var rosmsg = ROSMSG.load(msg_type);
+                var msg = web3.eth.contract(rosmsg.abi).at(r.args.msg);
                 // Publish ROS topic with converted message
-                topic.publish(ROSMSG[msg_type].eth2ros(msg));
+                topic.publish(rosmsg.eth2ros(msg));
             }
             else
                 console.log("Error: " + e);
@@ -64,7 +59,7 @@ function bridge(contract_address) {
         // Subscribe the ROS topic
         topic.subscribe(function (msg) {
             // Make mining the message contract
-            ROSMSG[eth_topic.messageType()].ros2eth(msg, web3, function(e, address) {
+            ROSMSG.load(eth_topic.messageType()).ros2eth(msg, web3, function(e, address) {
                 if (!e)
                     // Send transaction with message contract address
                     eth_topic.SubMessage.sendTransaction(address,
