@@ -80,7 +80,7 @@ contract ROSCompatible {
     Subscriber[] public subscribers;
     /*** Public methods ***/
     // Create a new Subscriber instance
-    function newSubscriber (string _name,
+    function mkSubscriber (string _name,
                             string _type,
                             MessageHandler _callback) returns (Subscriber) {
         var subscriber = new Subscriber(_name, _type, _callback);
@@ -88,7 +88,7 @@ contract ROSCompatible {
         return subscriber;
     }
     // Create a new Publisher instance
-    function newPublisher (string _name, string _type) returns (Publisher) {
+    function mkPublisher (string _name, string _type) returns (Publisher) {
         var publisher = new Publisher(_name, _type);
         publishers[publishers.length++] = publisher;
         return publisher;

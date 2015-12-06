@@ -17,7 +17,7 @@ contract SimplePub is ROSCompatible {
     
     function SampleContract() {
         // Create a new publisher by topic name and type
-        myPub = newPublisher('/hello', 'std_msgs/String');
+        myPub = mkPublisher('/hello', 'std_msgs/String');
     }
 
     function echo(string str) {

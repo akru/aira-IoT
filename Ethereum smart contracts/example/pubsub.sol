@@ -29,8 +29,8 @@ contract Integrator is MessageHandler {
 
 contract PubSub is ROSCompatible {
     function PubSub() {
-        var pub = newPublisher("/value", "std_msgs/Int64");
+        var pub = mkPublisher("/value", "std_msgs/Int64");
         var hdl = new Integrator(pub);
-        newSubscriber("/add", "std_msgs/Int64", hdl);
+        mkSubscriber("/add", "std_msgs/Int64", hdl);
     }
 }
