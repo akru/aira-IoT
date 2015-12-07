@@ -45,9 +45,10 @@ function bridge(contract_address) {
                 // Take message by message address received from event
                 var msg_type = eth_topic.messageType();
                 var rosmsg = ROSMSG.load(msg_type);
-                var msg = web3.eth.contract(rosmsg.abi).at(r.args.msg);
+                // Log debug
+                console.log("Received message for " + eth_topic.name() + " type " + msg_type);
                 // Publish ROS topic with converted message
-                topic.publish(rosmsg.eth2ros(msg));
+                topic.publish(rosmsg.eth2ros(r.args.msg, web3));
             }
             else
                 console.log("Error: " + e);
@@ -60,10 +61,13 @@ function bridge(contract_address) {
         topic.subscribe(function (msg) {
             // Make mining the message contract
             ROSMSG.load(eth_topic.messageType()).ros2eth(msg, web3, function(e, address) {
-                if (!e)
+                if (!e) {
+                    // Log debug
+                    console.log("Sended message " + address + " type " + eth_topic.messageType());
                     // Send transaction with message contract address
                     eth_topic.SubMessage.sendTransaction(address,
                         {from: web3.eth.accounts[0], gas: 500000});
+                }
                 else
                     console.log("Error: " + e);
             });

@@ -41,7 +41,10 @@ def quad_controller(target_queue, position_queue, arming_queue, homebase_pub):
     while arming_queue.get().data:
         pass
     print('Mission complete, set homebase {0}'.format(homebase))
-    homebase_pub.publish(homebase)
+    satpos = SatPosition()
+    satpos.latitude = homebase.latitude
+    satpos.longitude = homebase.longitude
+    homebase_pub.publish(satpos)
 
 def main():
     ''' The main routine '''

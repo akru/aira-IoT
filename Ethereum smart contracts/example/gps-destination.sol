@@ -41,9 +41,9 @@ contract PathCost is Message {
     }
 }
 
-contract EstimationListener is MessageHandler {
+contract EstimateListener is MessageHandler {
     GPSDestination parent;
-    function EstimationListener(GPSDestination _parent) {
+    function EstimateListener(GPSDestination _parent) {
         parent = _parent;
     }
     
@@ -67,7 +67,8 @@ contract HomebaseListener is MessageHandler {
 }
 
 contract GPSDestination is ROSCompatible { 
-    address dronAccount;
+    EstimateListener estimateListener;
+    HomebaseListener homebaseListener;
     Publisher estimatePub;
     Publisher targetPub;
     
@@ -100,7 +101,6 @@ contract GPSDestination is ROSCompatible {
     function GPSDestination(int256 _homebaseLongitude,
                             int256 _homebaseLatitude,
                             uint _estimatesActualBefore) {
-        dronAccount = msg.sender;
         homebaseLatitude = _homebaseLatitude;
         homebaseLongitude = _homebaseLongitude;
         estimatesActualBefore = _estimatesActualBefore * 1 minutes;
@@ -110,21 +110,24 @@ contract GPSDestination is ROSCompatible {
     function initROS() returns (bool result) {
         estimatePub = mkPublisher('/path_estimation/path',
                                   'dron_ros_tutorial/PathEstimate');
-        targetPub = mkPublisher('/dron_employye/target',
+        targetPub = mkPublisher('/dron_employee/target',
                                 'dron_ros_tutorial/SatPosition');
+        
+        estimateListener = new EstimateListener(this);
+        homebaseListener = new HomebaseListener(this);
         
         mkSubscriber('/path_estimation/cost',
                      'dron_ros_tutorial/PathCost',
-                     new EstimationListener(this));
-        mkSubscriber('/dron_employye/homebase',
+                     estimateListener);
+        mkSubscriber('/dron_employee/homebase',
                      'dron_ros_tutorial/SatPosition',
-                     new HomebaseListener(this));
+                     homebaseListener);
         return true;
     }
     
     /* Drone functions */
     function homebase(int256 _currentLongitude, int256 _currentLatitude) returns(bool result) {
-        if(msg.sender==dronAccount) {
+        if(msg.sender==address(homebaseListener)) {
         homebaseLongitude = _currentLongitude;
         homebaseLatitude = _currentLatitude;
         uint compliteEstimateID = customerEstimatesOf[currentCustomer];
@@ -134,7 +137,7 @@ contract GPSDestination is ROSCompatible {
     }
 
     function setEstimateCost(uint _estimateID, uint _cost) returns(bool result) {
-        if(msg.sender==dronAccount) {
+        if(msg.sender==address(estimateListener)) {
             Estimate e = estimates[_estimateID];
             e.cost = _cost;
             EstimateCostReceive(_estimateID, _cost);
@@ -162,7 +165,7 @@ contract GPSDestination is ROSCompatible {
         uint workEstimateID;
         workEstimateID = customerEstimatesOf[msg.sender];
         Estimate e = estimates[workEstimateID];
-        if(msg.value>=e.cost) {
+        if(msg.value >= e.cost) {
         currentCustomer = msg.sender;
         destinationLongitude = e.destinationLongitude;
         destinationLatitude = e.destinationLatitude;
