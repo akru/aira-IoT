@@ -1,0 +1,7 @@
+install(
+  FILES msg.h.template
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+catkin_install_python(
+  PROGRAMS gen_sol.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
