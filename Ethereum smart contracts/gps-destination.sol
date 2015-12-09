@@ -3,8 +3,6 @@ contract gpsdestination {
     address public currentCustomer;
     string public currentLongitude;
     string public currentLatitude;
-    string public homebaseLongitude;
-    string public homebaseLatitude;
     string public destinationLongitude;
     string public destinationLatitude;
     uint public estimatesActualBefore;
@@ -69,7 +67,7 @@ contract gpsdestination {
         e.destinationLatitude = _destinationLatitude;
         e.actualBefore = now + estimatesActualBefore;
         customerEstimatesOf[msg.sender] = estimateID;
-        NewEstimate(estimateID, _destinationLongitude, _destinationLatitude, homebaseLongitude, homebaseLatitude);
+        NewEstimate(estimateID, _destinationLongitude, _destinationLatitude, currentLongitude, currentLatitude);
         return estimateID;
     }
 

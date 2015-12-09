@@ -28,13 +28,13 @@ class GEthEvent:
         self.estimate['from'] = {'lon': float(est[2]), 'lat': float(est[3])}
         self.estimate['to']   = {'lon': float(est[4]), 'lat': float(est[5][:-2])}
 
-    def setEstimateCost(self, estimate_id, cost):
-        cmd = 'gps.setEstimateCost.sendTransaction({0}, {1}, {{from: eth.accounts[0], gas: 500000}})'.format(estimate_id, cost)
+    def setEstimateCost(self, estimate_id, cost, distance):
+        cmd = 'contract.setEstimateCost.sendTransaction({0}, {1}, {2}, {{from: eth.accounts[0], gas: 500000}})'.format(estimate_id, cost, distance)
         print 'DEBUG :: ', cmd
         self._geth.sendline(cmd)
 
     def setHomebase(self, longitude, latitude):
-        cmd = 'gps.homebase.sendTransaction(\'{0}\', \'{1}\', {{from: eth.accounts[0], gas: 500000}})    '.format(longitude, latitude)
+        cmd = 'contract.homebase.sendTransaction(\'{0}\', \'{1}\', {{from: eth.accounts[0], gas: 500000}})    '.format(longitude, latitude)
         print 'DEBUG :: ', cmd
         self._geth.sendline(cmd)
 

@@ -91,10 +91,11 @@ def main():
                                 ,e.estimate['from']['lon']
                                 ,e.estimate['to']['lat']
                                 ,e.estimate['to']['lon'])
+            distance = int(round(length * 1000))
             print('Path length is {0} km'.format(length)) 
             cost = int(round(length * 10))
             print('Cost is {0} Eth'.format(cost))
-            e.setEstimateCost(e.estimate['id'], cost)
+            e.setEstimateCost(e.estimate['id'], cost, distance)
 
 if __name__ == '__main__':
     main()
