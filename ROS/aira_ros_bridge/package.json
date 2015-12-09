@@ -1,0 +1,33 @@
+{
+  "name": "aira_ros_bridge",
+  "version": "0.1.0",
+  "description": "Ehtereum to ROS bridge solution.",
+  "main": "./index.js",
+  "directories": {
+    "lib": "./lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aira-dao/aira-IoT.git"
+  },
+  "keywords": [
+    "IoT",
+    "Ethereum",
+    "ROS",
+    "robotics",
+    "cryptocurrency"
+  ],
+  "author": "Alexander Krupenkin <mail@akru.me>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aira-dao/aira-IoT/issues"
+  },
+  "homepage": "https://github.com/aira-dao/aira-IoT#readme",
+  "dependencies": {
+    "web3": "0.15.1",
+    "roslib": "0.17.0" 
+  }
+}

@@ -1,0 +1,8 @@
+/* ABI definition */
+module.exports = {
+    ros_compatible: [{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"subscribers","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":false,"inputs":[{"name":"_name","type":"string"},{"name":"_type","type":"string"}],"name":"mkPublisher","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":false,"inputs":[{"name":"_name","type":"string"},{"name":"_type","type":"string"},{"name":"_callback","type":"address"}],"name":"mkSubscriber","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"publishers","outputs":[{"name":"","type":"address"}],"type":"function"}],
+
+    publisher: [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"type":"function"},{"constant":true,"inputs":[],"name":"messageType","outputs":[{"name":"","type":"string"}],"type":"function"},{"constant":false,"inputs":[{"name":"_msg","type":"address"}],"name":"publish","outputs":[],"type":"function"},{"inputs":[{"name":"_name","type":"string"},{"name":"_type","type":"string"}],"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"msg","type":"address"}],"name":"PubMessage","type":"event"}], 
+
+    subscriber: [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"type":"function"},{"constant":true,"inputs":[],"name":"messageType","outputs":[{"name":"","type":"string"}],"type":"function"},{"constant":false,"inputs":[{"name":"_msg","type":"address"}],"name":"SubMessage","outputs":[],"type":"function"},{"inputs":[{"name":"_name","type":"string"},{"name":"_type","type":"string"},{"name":"_callback","type":"address"}],"type":"constructor"}]
+}
