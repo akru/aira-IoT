@@ -2,6 +2,9 @@
 
 ## Simple publisher
 
+This example makes only one `Publisher` object that provide ability to
+publish message to ROS topic.
+
 ### Solidity contract
 
 See the [example contract](https://raw.githubusercontent.com/aira-dao/aira-IoT/master/Ethereum%20smart%20contracts/example/simple_publisher.sol):
@@ -86,4 +89,90 @@ After some time `rostopic` console show:
 
     WARNING: topic [/hello] does not appear to be published yet
     data: Hello world!
+    ---
+
+## Publisher/Subscriber combination
+
+The next example combine `Subscriber` with `Publisher` and can
+subscribe to topics and pubish new messages too.
+
+Task is write simple integrator with ROS interface:
+
+* `/add` :: **std_msgs/Int64** - Input integer value
+* `/value` :: **std_msgs/Int64** - Sum of all input values
+
+### Solidity contract
+
+See the [example](https://raw.githubusercontent.com/aira-dao/aira-IoT/master/Ethereum%20smart%20contracts/example/pubsub.sol):
+
+    contract Integrator is MessageHandler {
+        Publisher myPub;
+        int64     value;
+
+Contract `Integrator` can handle incoming messages and have two private members:
+`Publisher` and `int64`. `value` member used for storing current value and
+publish into `myPub`.
+
+        function Integrator(Publisher _pub) {
+            myPub = _pub;
+            value = 0;
+        }
+
+Constructor just copy publisher from arguments and init `value` by zero.
+
+        function incomingMessage(Message _msg) {
+            value += MsgInt64(_msg).data();
+            myPub.publish(new MsgInt64(value));
+        }
+    }
+
+This method of `MessageHandler` interface takes `Message` argument.
+From incoming message taked `data` and added to `value` member.
+The next `myPub` publish `value` wrapped by `MsgInt64` object.
+
+    contract PubSub is ROSCompatible {
+        function PubSub() {
+            var pub = mkPublisher("/value", "std_msgs/Int64");
+            var hdl = new Integrator(pub);
+            mkSubscriber("/add", "std_msgs/Int64", hdl);
+        }
+    }
+
+The last `PubSub` contract is `ROSCompatible` and have only one constructor.
+Constructor create publisher, message handler with publisher as argument and
+subscriber with message handler as argument.
+
+### ROS interaction
+
+Lets mine `PubSub` contract and start AIRA ROS Bridge with them address:
+
+    $ node start.js 0x8dc4bb82cbbdd0980cc8bd57c7ddc9682185acb7
+    util.debug: Use console.error instead
+    DEBUG: ROSLib uses utf8 encoding by default.It would be more efficent to use ascii (if possible)
+    Contract: 0x8dc4bb82cbbdd0980cc8bd57c7ddc9682185acb7
+    Publishers:
+    /value :: std_msgs/Int64
+    Subscribers:
+    /add :: std_msgs/Int64
+    Connected to websocket server.
+
+Open terminal and start `rostopic` message subscriber node:
+
+    $ rostopic echo /value
+
+The next publish by `rostopic` some messages to `/add`:
+
+    $ rostopic pub /add std_msgs/Int64 'data: 10'
+    publishing and latching message. Press ctrl-C to terminate
+
+    $ rostopic pub /add std_msgs/Int64 'data: -2'
+    publishing and latching message. Press ctrl-C to terminate
+
+After some time the subscriber `rostopic` says:
+
+    $ rostopic echo /value
+    WARNING: topic [/value] does not appear to be published yet
+    data: 10
+    ---
+    data: 8
     ---

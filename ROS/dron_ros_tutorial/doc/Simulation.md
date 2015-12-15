@@ -3,13 +3,12 @@
 ## Install ROS
 
 Install `ros-indigo-desktop-full` for your distro.
-Install `ros-indigo-control_toolbox` for your distro.
 
-## Install SITL Enviroment
+## Install SITL enviroment
 
 ### MAVLink & Ardupilot ROS node install
 
-Run `aira_iot/tools/mavlink_build_ws.sh mav_ws`,
+Run `dron_ros_tutorial/tools/mavlink_build_ws.sh mav_ws`,
 this script build MAVLink catkin workspace for the ROS.
 
 ### ArduCopter SITL

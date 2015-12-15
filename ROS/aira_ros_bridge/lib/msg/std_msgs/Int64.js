@@ -4,6 +4,11 @@ var Helpers = require('../helpers');
 // Solidity data
 var bytecode = '60606040526040516020806085833950608060405251600080547801000000000000000000000000000000000000000000000000808402046001604060020a03199091161790555060328060536000396000f3606060405260e060020a600035046373d4a13a8114601a575b005b602560005460070b81565b60070b6060908152602090f3';
 var abi = [{"constant":true,"inputs":[],"name":"data","outputs":[{"name":"","type":"int64"}],"type":"function"},{"inputs":[{"name":"_data","type":"int64"}],"type":"constructor"}]; 
+// JSON serialization
+function eth2json(address, web3) {
+    var msg = Helpers.getContract(abi, address, web3);
+    return {data: parseInt(msg.data())}
+}
 // Setup exports
 module.exports = {
 /*
@@ -12,7 +17,8 @@ module.exports = {
  * TODO: converter implementation.
  */
     abi: abi,
-    eth2ros: function(msg) {return new ROSLIB.Message({data: parseInt(msg.data())})},
+    eth2json: eth2json,
+    eth2ros: function(msg, web3) {return new ROSLIB.Message(eth2json(msg, web3))},
     ros2eth: function(msg, web3, fun) {
         //
         var msg_data = msg.data;

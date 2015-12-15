@@ -17,7 +17,7 @@ module.exports = {
  * TODO: converter implementation.
  */
     abi: abi,
-    eth2json: eth2json
+    eth2json: eth2json,
     eth2ros: function(msg, web3) {return new ROSLIB.Message(eth2json(msg, web3))},
     ros2eth: function(msg, web3, fun) {
     var args = [msg.data];
