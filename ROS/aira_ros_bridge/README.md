@@ -1,12 +1,12 @@
 # AIRA ROS Bridge
 
-This package provide bridging interface for the Ethereum smart contracts to ROS.
+This package provide bridging interface for the [Ethereum](https://www.ethereum.org) smart contracts to [ROS](http://www.ros.org).
 
 ## Description
 
 The module is a part of AIRA IoT project. The second part is a Solidity contracts 
 implemented [there](https://github.com/aira-dao/aira-IoT/blob/bridge/Ethereum%20smart%20contracts/ros.sol). The aim of this modules is make your smart contracts be able to interaction 
-with Robot Operation System nodes, applications, robots, etc.
+with Robot Operating System nodes, applications, robots, etc.
 
 ## Usage
 
@@ -25,23 +25,18 @@ The second, you need ROS be installed, [installation instructions](http://wiki.r
 
 The next instructions:
 
-    $ git clone https://github.com/aira-dao/aira-IoT.git && cd aira-IoT
-    $ git checkout bridge
-    $ cd ROS/aira_ros_bridge && npm install
+    $ git clone https://github.com/aira-dao/aira-IoT.git
+    $ cd aira-IoT/ROS/aira_ros_bridge && npm install
 
 Node.js package manager do install deps.
 
-Run ROS Bridge Suite server in other terminal:
+[Run ROS Bridge Suite](http://wiki.ros.org/rosbridge_suite/Tutorials/RunningRosbridge) server in other terminal:
 
     $ roslaunch rosbridge_server rosbridge_websocket.launch
 
-The last edit `start.js` file, replace contract address by your and run:
+Run `start.js` with your mined contract address:
 
-    $ node start.js
-
-For example, you see:
-
-    $ node start.js 
+    $ node start.js 0xdc5e34c48d807cf2377cc93d0d4c711c8e2ac88d 
     util.debug: Use console.error instead
     DEBUG: ROSLib uses utf8 encoding by default.It would be more efficent to use ascii (if possible)
     Contract: 0xdc5e34c48d807cf2377cc93d0d4c711c8e2ac88d
@@ -50,4 +45,3 @@ For example, you see:
     Subscribers:
     /add :: std_msgs/Int64
     Connected to websocket server.
-
