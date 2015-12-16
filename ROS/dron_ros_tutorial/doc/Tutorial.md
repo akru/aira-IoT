@@ -66,7 +66,7 @@ you can start AIRA ROS Bridge now, full start instructions is [there](https://gi
     DEBUG: ROSLib uses utf8 encoding by default.It would be more efficent to use ascii (if possible)
     Contract: 0xc52db6edc294ecf434a322b93e09d87d1aae80ae
     Publishers:
-    /echo :: std_msgs/String
+    /hello :: std_msgs/String
     Subscribers:
 
 Described on the top contract have a simple ROS interface:
@@ -83,7 +83,7 @@ This tool should print received strings to screen.
 Try to publish string by `sendTransaction` method in `geth console`:
 
     > var contract = eth.contract(simple_publisher_abi).at("0xc52db6edc294ecf434a322b93e09d87d1aae80ae")
-    > contract.echo.sendtransaction("Hello world!", {from: eth.accounts[0], gas: 500000})
+    > contract.echo.sendTransaction("Hello world!", {from: eth.accounts[0], gas: 500000})
 
 After some time `rostopic` console show:
 
@@ -176,3 +176,201 @@ After some time the subscriber `rostopic` says:
     ---
     data: 8
     ---
+
+## Dron GPS Destination contract
+
+The task have a two parts:
+
+* **path estimation** :: how cost to flight for this point? 
+* **flight** :: dron flight and return back.
+
+The [video](https://www.youtube.com/watch?v=nuf6JtocTTQ) of this task solution.
+
+The ROS interface of *dron* is:
+
+Subscribers:
+
+* `/path_estimation/path` :: **dron_ros_tutorial/PathEstimate** - estimate cost of path
+* `/dron_employee/target` :: **dron_ros_tutorial/SatPosition** - move dron to target point and go back
+
+Publishers:
+
+* `/path_estimation/cost` :: **dron_ros_tutorial/PathCost** - cost of path in ethers
+* `/dron_employee/homebase` :: **dron_ros_tutorial/SatPosition** - dron current position
+
+### Solidity contract
+
+See the [gps-destination.sol](https://raw.githubusercontent.com/aira-dao/aira-IoT/master/Ethereum%20smart%20contracts/example/gps-destination.sol) contract: 
+
+    contract EstimateListener is MessageHandler {
+        GPSDestination parent;
+        function EstimateListener(GPSDestination _parent) {
+            parent = _parent;
+        }
+    
+        function incomingMessage(Message _msg) {
+            var cost = PathCost(_msg);
+            parent.setEstimateCost(cost.ident(), cost.cost());
+        }
+    }
+
+This contract is path cost message handler, this call `parent` contract `setEstimateCost` method every new message is coming.
+
+    contract HomebaseListener is MessageHandler {
+        GPSDestination parent;
+        
+        function HomebaseListener(GPSDestination _parent) {
+            parent = _parent;
+        }
+                            
+        function incomingMessage(Message _msg) {
+            SatPosition pos = SatPosition(_msg);
+            parent.homebase(pos.longitude(), pos.latitude());
+        }
+    }
+
+This contract is homebase message handler, this call `parent` contract `homebase` method every new message is coming.
+
+    contract GPSDestination is ROSCompatible { 
+
+The `ROSCompatible` main contract is this.
+
+        EstimateListener estimateListener;
+        HomebaseListener homebaseListener;
+        Publisher estimatePub;
+        Publisher targetPub;
+
+Private members for message handlers and publishers.
+
+        address public currentCustomer;
+        int256  public homebaseLongitude;
+        int256  public homebaseLatitude;
+        int256  public destinationLongitude;
+        int256  public destinationLatitude;
+        uint    public estimatesActualBefore;
+
+Common dron information e.g. current customer, home and destination points.
+
+        mapping (address => uint) customerEstimatesOf;
+
+Customer to estimation request ID mapping.
+ 
+        struct Estimate {
+            address customerAddr;
+            int256 destinationLongitude;
+            int256 destinationLatitude;
+            uint cost;
+            uint actualBefore; 
+        }
+
+        Estimate[] public estimates; 
+
+`Estimate` structure definition and array for storing path estimation requests.
+
+        event DroneComeback(uint estimateID);
+        event EstimateCostReceive(uint estimateID, uint cost);
+
+Two customer events: drone come back from mission, path cost is received from drone.
+
+        function GPSDestination(int256 _homebaseLongitude,
+                                int256 _homebaseLatitude,
+                                uint _estimatesActualBefore) {
+            homebaseLatitude = _homebaseLatitude;
+            homebaseLongitude = _homebaseLongitude;
+            estimatesActualBefore = _estimatesActualBefore * 1 minutes;
+        }
+
+Constructor of contract, sets initial values of home point.
+
+        function initROS() returns (bool result) {
+            estimatePub = mkPublisher('/path_estimation/path',
+                                      'dron_ros_tutorial/PathEstimate');
+            targetPub = mkPublisher('/dron_employee/target',
+                                    'dron_ros_tutorial/SatPosition');
+
+Create two publishers for path estimation topic and dron target topic and save into private members for the future use.
+
+            estimateListener = new EstimateListener(this);
+            homebaseListener = new HomebaseListener(this);
+
+Create two message handlers for the path estimation and homebase cases.
+
+            mkSubscriber('/path_estimation/cost',
+                         'dron_ros_tutorial/PathCost',
+                         estimateListener);
+            mkSubscriber('/dron_employee/homebase',
+                         'dron_ros_tutorial/SatPosition',
+                         homebaseListener);
+
+Create two subscribers with previously instantied handlers.
+
+            return true;
+        }
+
+ROS communication initial method takes too much GAS and can not be placed in constructor. **Should be called after contract is created.**
+
+    function homebase(int256 _currentLongitude, int256 _currentLatitude) returns(bool result) {
+
+Takes two arguments: longitude and altitude of dron home position and sets contract members for this. Also reset current customer information and emit `DroneComeback` event.
+
+    function setEstimateCost(uint _estimateID, uint _cost) returns(bool result) {
+
+Takes two arguments: path estimation request ID and cost in ethers, saves cost into `estimates` array and emit `EstimateCostReceive` event.
+
+    function setNewEstimate(int256 _destinationLongitude,
+                            int256 _destinationLatitude) returns(uint estimateID) {
+
+Takes two arguments: destination longitude and latitude and return path estimation request ID. This function create new item in `estimates` array with destination coords, timestamp and publish new message by `estimatePub` instance:
+    
+        var base = new SatPosition(homebaseLatitude, homebaseLongitude);
+        var target = new SatPosition(_destinationLatitude, _destinationLongitude);
+        estimatePub.publish(new PathEstimate(uint16(estimateID), base, target));
+
+The last method is:
+
+    function takeFlight() returns(bool result) {
+        uint workEstimateID = customerEstimatesOf[msg.sender];
+        Estimate e = estimates[workEstimateID];
+        if(msg.value >= e.cost) {
+
+This method checks amount of ethers sended with transaction to `takeFlight` method, when count is big or eq do publish the dron target:
+
+            targetPub.publish(new SatPosition(destinationLongitude, destinationLatitude));
+
+In other case - return money to sender:
+
+        } else msg.sender.send(msg.value);
+
+### ROS interaction
+
+The *path estimation* task have solved by [path_estimator.py](https://github.com/aira-dao/aira-IoT/blob/master/ROS/dron_ros_tutorial/scripts/path_estimator.py) ROS node.
+
+And the *target motion* task have solved by [quad_controller.py](https://github.com/aira-dao/aira-IoT/blob/master/ROS/dron_ros_tutorial/scripts/quad_controller.py) ROS node.
+
+The package [dron_ros_tutorial](https://github.com/aira-dao/aira-IoT/tree/master/ROS/dron_ros_tutorial) is a valid ROS package and can be build by [catkin](http://wiki.ros.org/catkin/Tutorials/using_a_workspace).
+
+    $ mkdir -p catkin_ws/src && cd catkin_ws/src && catkin_init_workspace
+    $ cp -r /path/to/dron_ros_tutorial .
+    $ cd .. && catkin_make
+    $ source devel/setup.bash
+
+After building you can just launch `apm_sitl.launch` for [local simulation cycle](https://github.com/aira-dao/aira-IoT/blob/master/ROS/dron_ros_tutorial/doc/Simulation.md).
+
+    $ launch dron_ros_tutorial apm_sitl.launch
+
+The next is mine [gps-destination.sol](https://github.com/aira-dao/aira-IoT/blob/master/Ethereum%20smart%20contracts/example/gps-destination.sol) contract and taking the address. With contract address do call `initROS` method of contract for creating ROS interface of this.
+
+    > gpsdestionationContract.initROS.sendTransaction({from: eth.accounts[0], gas: 3000000})
+
+The last is start [AIRA ROS Bridge](https://github.com/aira-dao/aira-IoT/tree/master/ROS/aira_ros_bridge) with current contract address. 
+
+    $ node start.js 0x0ba4478113b307e5053366b4ef0d049801268a7e
+    util.debug: Use console.error instead
+    DEBUG: ROSLib uses utf8 encoding by default.It would be more efficent to use ascii (if possible)
+    Contract: 0x0ba4478113b307e5053366b4ef0d049801268a7e
+    Publishers:
+    /path_estimation/path :: dron_ros_tutorial/PathEstimate
+    /dron_employee/target :: dron_ros_tutorial/SatPosition
+    Subscribers:
+    /path_estimation/cost :: dron_ros_tutorial/PathCost
+    /dron_employee/homebase :: dron_ros_tutorial/SatPosition
