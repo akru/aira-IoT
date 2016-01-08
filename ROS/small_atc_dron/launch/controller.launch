@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <node name="state_publisher" pkg="small_atc_dron" type="state_publisher.py" />
+    <node name="dron_controller" pkg="small_atc_dron" type="quad_controller.py" output="screen"/>
+</launch>

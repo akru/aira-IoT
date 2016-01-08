@@ -16,8 +16,9 @@ PlannerOMPL::PlannerOMPL(const ObstacleProvider *obstProvider,
 {
     // Set up the bounds
     ob::RealVectorBounds bounds(3);
-    bounds.setLow(-1000);
-    bounds.setHigh(1000);
+    // TODO: set correct bounds by map meta
+    bounds.setLow(-2000);
+    bounds.setHigh(2000);
     space->as<ob::RealVectorStateSpace>()->setBounds(bounds);
     // Making the validity checker
     ob::StateValidityCheckerPtr checker(
@@ -79,11 +80,11 @@ bool PlannerOMPL::ValidityChecker::isValid(const ob::State *state) const {
     const type *s = static_cast<const type *>(state);
     // Making an object
     fcl::Transform3f stateTrans(fcl::Vec3f(s->values[0], s->values[1], s->values[2]));
-    boost::shared_ptr<fcl::Sphere>  dronModel(new fcl::Sphere(25));
-    fcl::CollisionObject            stateObject(dronModel, stateTrans);
-    HasCollisionFCL                 collisionObject(&stateObject);
+    boost::shared_ptr<fcl::Sphere> dronModel(new fcl::Sphere(15));
+    fcl::CollisionObject           stateObject(dronModel, stateTrans);
+    HasCollisionFCL                collisionObject(&stateObject);
     // Check collision for all obstacles in collider
-    for (auto obstacle : collider->getObstacles())
+    for (auto obstacle : collider->getCollisionObjects())
         if (obstacle->hasCollision(&collisionObject))
             return false;
     return true;

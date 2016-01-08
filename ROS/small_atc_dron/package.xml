@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>dron_ros_tutorial</name>
+  <name>small_atc_dron</name>
   <version>0.1.0</version>
   <description>Dron interaction through Ethereum tutorial</description>
 
@@ -13,7 +13,7 @@
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>MIT</license>
+  <license>GPLv3</license>
 
 
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
@@ -41,12 +41,12 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>dron_common_msgs</build_depend>
-  <build_depend>std_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
   <build_depend>mavros_msgs</build_depend>
   <build_depend>rospy</build_depend>
+  <run_depend>message_runtime</run_depend>
   <run_depend>dron_common_msgs</run_depend>
   <run_depend>mavros_msgs</run_depend>
-  <run_depend>std_msgs</run_depend>
   <run_depend>rospy</run_depend>
 
 

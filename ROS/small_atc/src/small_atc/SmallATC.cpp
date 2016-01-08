@@ -7,27 +7,30 @@
 using namespace ros;
 using namespace dron_common_msgs;
 
-SmallATC::SmallATC(const std::string &filename, const MapMetaData &map_meta)
-    : atc_planner(new PlannerOMPL(this, map_meta))
-    , last_id(-1) {
+SmallATC::SmallATC() {
+    MapMetaData map_meta;
+    // TODO: Load map metadata
+    obstacles = new ObstacleProviderImpl<DynamicOctoMap>(node_handle);
+    atc_planner = new PlannerOMPL(obstacles, map_meta);
     // Making the route request/response handlers
-    route_response = node_handle.advertise<LocalRouteResponse>("/route/response_local", 1);
-    route_request  = node_handle.subscribe<LocalRouteRequest>("/route/request_local", 1, 
+    route_response = node_handle.advertise<LocalRouteResponse>("route/response_local", 1);
+    route_request  = node_handle.subscribe<LocalRouteRequest>("route/request_local", 1, 
             &SmallATC::requestHandler, this); 
     // Adding the first obstacle - the topographic map
-    DynamicOctoMap map(filename);
-    addObstacle(map);
+    std::string filename;
+    if (param::get("~map_file", filename)) {
+        obstacles->addObstacle(0, new DynamicOctoMap(filename));
+        ROS_INFO("Loaded topographic map: %s", filename.c_str());
+    }
 }
 
-ObstacleVector SmallATC::getObstacles() const {
-    ObstacleVector obstacles;
-    for (auto k = collider.begin(); k != collider.end(); ++k)
-        obstacles.push_back(&k->second);
-    return obstacles;
+SmallATC::~SmallATC() {
+    delete atc_planner;
+    delete obstacles;
 }
 
 void SmallATC::requestHandler(const LocalRouteRequest::ConstPtr &msg) { 
-    std::cout << "Planning..." << std::endl;
+    ROS_INFO("Start planning...");
     LocalRouteResponse response;
     for (int i = 0; i < msg->checkpoints.size() - 1; i++) {
         auto plan = atc_planner->plan(msg->checkpoints[i],
@@ -35,41 +38,28 @@ void SmallATC::requestHandler(const LocalRouteRequest::ConstPtr &msg) {
         response.route.insert(response.route.end(), plan.begin(), plan.end());
     }
     response.valid = response.route.size() > 0;
-    std::string valid_str = response.valid ? "valid" : "invalid"; 
-    std::cout << "Plan: " << valid_str << std::endl;
+    response.id = msg->id;
     if (response.valid) {
+        ROS_INFO("Plan is valid.");
         // Register route
-        DynamicOctoMap obstacle_map(atc_planner->getMapMetaData().resolution);
-        obstacle_map.drawRoute(response.route, 25);
-        addObstacle(obstacle_map);
-        std::cout << "Plan registered" << std::endl;
+        DynamicOctoMap *map = new DynamicOctoMap(); // TODO: resolution set
+        map->drawRoute(response.route, 25);
+        obstacles->addObstacle(response.id, map);
+        ROS_INFO("Plan registered with id=%d", response.id);
+    } else {
+        ROS_WARN("No valid plan!");
     }
     // Publish response
     route_response.publish(response);
-    std::cout << "Plan published" << std::endl;
 }
 
 int SmallATC::exec() {
     ros::Rate dur(1);
     while (ros::ok()) {
         // Publish all the obstacles with associated topics
-        for (auto k = collider.begin(); k != collider.end(); ++k)
-            obstacle_topics[k->first].publish(k->second.getOctomapMsg());
+        obstacles->publishAll();
         ros::spinOnce();
         dur.sleep();
     }
     return 0;
-}
-
-int SmallATC::addObstacle(const DynamicOctoMap &obstacle) {
-    collider[++last_id] = obstacle;
-    Publisher pub = node_handle.advertise<octomap_msgs::Octomap>(
-            "/obstacle/" + std::to_string(last_id), 1);
-    obstacle_topics[last_id] = pub;
-    std::cout << "Obstacle #" << last_id << " registered!" << std::endl;
-    return last_id;
-}
-
-bool SmallATC::removeObstacle(int id) {
-    return collider.erase(id) + obstacle_topics.erase(id);
 }

@@ -3,7 +3,6 @@
 
 #include "Planner.h" 
 #include "DynamicOctoMap.h" 
-#include "HasCollision.h" 
 #include "ObstacleProvider.h" 
 
 #include <ros/ros.h>
@@ -12,26 +11,11 @@
 using namespace ros;
 using namespace dron_common_msgs;
 
-class SmallATC : public ObstacleProvider
+class SmallATC
 {
 public:
-    SmallATC(const std::string &filename, const MapMetaData &map_meta);
-    ~SmallATC() {
-        delete atc_planner;
-    }
-
-    ObstacleVector getObstacles() const;
-
-    /**
-     * Obstacle registration method,
-     * returns obstacle id
-     **/
-    int addObstacle(const DynamicOctoMap &obstacle);
-
-    /**
-     * Remove obstacle with id from collider
-     **/
-    bool removeObstacle(int id);
+    SmallATC();
+    ~SmallATC();
 
     /**
      * Exec the Small Air Traffic Controller
@@ -42,18 +26,12 @@ protected:
     void requestHandler(const LocalRouteRequest::ConstPtr &msg);
 
 private:
-    Planner      *atc_planner;
-    NodeHandle    node_handle;
+    ObstacleProviderImpl<DynamicOctoMap> *obstacles;
+    Planner    *atc_planner;
+    NodeHandle  node_handle;
 
-    Publisher     route_response;
-    Subscriber    route_request;
-
-    // Map with all obstacles
-    std::map<int,DynamicOctoMap> collider;
-    // Map with all obstacle topics
-    std::map<int,Publisher>  obstacle_topics;
-    // The last used id
-    int last_id;
+    Publisher   route_response;
+    Subscriber  route_request;
 };
 
 #endif

@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(dron_ros_tutorial)
+project(small_atc_dron)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   rospy
-  std_msgs
   mavros_msgs
   dron_common_msgs
 )
@@ -78,7 +77,7 @@ catkin_package(
 #  LIBRARIES dron_employee_ros
 #  CATKIN_DEPENDS std_msgs
 #  DEPENDS system_lib
-  CATKIN_DEPENDS dron_common_msgs mavros_msgs std_msgs
+  CATKIN_DEPENDS message_runtime dron_common_msgs mavros_msgs
 )
 
 ###########
