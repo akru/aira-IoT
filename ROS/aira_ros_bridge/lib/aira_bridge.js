@@ -10,8 +10,7 @@ var ROSMSG = require('./rosmsg');
 var web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 
-var ros = new ROSLIB.Ros({url : 'ws://localhost:9090'});
-ros.on('connection', function() {console.log('Connected to websocket server.')});
+var ros;
 
 /*** Functions ***/
 function topicOn(accessor, contract_abi, fun) {
@@ -32,7 +31,11 @@ function topicOn(accessor, contract_abi, fun) {
     }
 }
 
-function bridge(contract_address) {
+function bridge(contract_address, port) {
+    /* Init ROS connection instance */
+    ros = new ROSLIB.Ros({url : 'ws://localhost:'+port});
+    ros.on('connection', function() {console.log('Connected to websocket server.')});
+
     /* Load publishers */
     var ros_contract = web3.eth.contract(ABI.ros_compatible).at(contract_address);
 

@@ -4,7 +4,7 @@
 uint16 ident
 
 # Dron base
-SatPosition base
+SatFix base
 
 # Dron destination 
-SatPosition destination
+SatFix destination

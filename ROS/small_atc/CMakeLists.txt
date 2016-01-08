@@ -1,18 +1,26 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(dron_ros_tutorial)
+project(small_atc)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  rospy
-  std_msgs
-  mavros_msgs
   dron_common_msgs
+  roslib
+  roscpp
+  rostime
+  cmake_modules
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system)
+find_package(octomap REQUIRED)
+find_package(ompl REQUIRED)
+
+find_package(PkgConfig REQUIRED) 
+pkg_check_modules(LIBFCL REQUIRED fcl) 
+find_library(LIBFCL_LIBRARIES_FULL ${LIBFCL_LIBRARIES} ${LIBFCL_LIBRARY_DIRS}) 
+set(LIBFCL_LIBRARIES "${LIBFCL_LIBRARIES_FULL}") 
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -44,6 +52,33 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
+## Generate messages in the 'msg' folder
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
+
+## Generate services in the 'srv' folder
+# add_service_files(
+#   FILES
+#   Service1.srv
+#   Service2.srv
+# )
+
+## Generate actions in the 'action' folder
+# add_action_files(
+#   FILES
+#   Action1.action
+#   Action2.action
+# )
+
+## Generate added messages and services with any dependencies listed here
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
+
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
@@ -74,11 +109,15 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES dron_employee_ros
-#  CATKIN_DEPENDS std_msgs
-#  DEPENDS system_lib
-  CATKIN_DEPENDS dron_common_msgs mavros_msgs std_msgs
+  INCLUDE_DIRS
+    ${THIS_PACKAGE_INCLUDE_DIRS} 
+    ${OCTOMAP_INCLUDE_DIRS}
+  LIBRARIES small_atc
+    ${OCTOMAP_LIBRARIES}
+  CATKIN_DEPENDS
+    dron_common_msgs
+  DEPENDS
+    system_lib
 )
 
 ###########
@@ -87,32 +126,52 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+include_directories(SYSTEM ${Boost_INCLUDE_DIR})
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
+  ${OCTOMAP_INCLUDE_DIRS}
+  ${OMPL_INCLUDE_DIRS}
 )
 
+link_directories(${Boost_LIBRARY_DIRS})                                                             
+link_directories(${catkin_LIBRARY_DIRS}) 
+
 ## Declare a C++ library
-# add_library(dron_employee_ros
-#   src/${PROJECT_NAME}/dron_employee_ros.cpp
-# )
+add_library(small_atc
+    src/${PROJECT_NAME}/DynamicOctoMap.cpp
+    src/${PROJECT_NAME}/PlannerOMPL.cpp
+    src/${PROJECT_NAME}/SmallATC.cpp
+)
+
+target_compile_features(small_atc PRIVATE cxx_range_for)
+
+target_link_libraries(small_atc
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${OCTOMAP_LIBRARIES}
+  ${OMPL_LIBRARIES}
+  ${LIBFCL_LIBRARIES}
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(dron_employee_ros ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(small_atc ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(dron_employee_ros_node src/dron_employee_ros_node.cpp)
+add_executable(small_atc_node src/small_atc_node.cpp)
+target_compile_features(small_atc_node PRIVATE cxx_range_for)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(dron_employee_ros_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(small_atc_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(dron_employee_ros_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(small_atc_node
+  ${catkin_LIBRARIES}
+  small_atc
+)
 
 #############
 ## Install ##
@@ -129,17 +188,23 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS dron_employee_ros dron_employee_ros_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+install(TARGETS small_atc small_atc_node
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+)
+
+## Mark other files for installation (e.g. launch and bag files, etc.)
+# install(FILES
+#   # myfile1
+#   # myfile2
+#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
 
 #############
@@ -147,7 +212,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_dron_employee_ros.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_small_atc.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

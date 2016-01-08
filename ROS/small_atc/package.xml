@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>dron_ros_tutorial</name>
-  <version>0.1.0</version>
-  <description>Dron interaction through Ethereum tutorial</description>
+  <name>small_atc</name>
+  <version>0.0.0</version>
+  <description>The small Air Traffic Control</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -13,13 +13,13 @@
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>MIT</license>
+  <license>GPLv3</license>
 
 
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/dron_employee_ros</url> -->
+  <!-- <url type="website">http://wiki.ros.org/small_atc</url> -->
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
@@ -40,14 +40,22 @@
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roslib</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rostime</build_depend>
   <build_depend>dron_common_msgs</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>mavros_msgs</build_depend>
-  <build_depend>rospy</build_depend>
+  <build_depend>octomap</build_depend>
+  <build_depend>fcl</build_depend>
+  <build_depend>boost</build_depend>
+  <build_depend>xmlrpcpp</build_depend>
+  <run_depend>roslib</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rostime</run_depend>
   <run_depend>dron_common_msgs</run_depend>
-  <run_depend>mavros_msgs</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>rospy</run_depend>
+  <run_depend>octomap</run_depend>
+  <run_depend>fcl</run_depend>
+  <run_depend>boost</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
