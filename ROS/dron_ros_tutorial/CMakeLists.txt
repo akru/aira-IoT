@@ -5,10 +5,12 @@ project(dron_ros_tutorial)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  rospy
+  message_generation
   std_msgs
   mavros_msgs
-  dron_common_msgs
+  sensor_msgs
+  geometry_msgs
+  rospy
 )
 
 ## System dependencies are found with CMake's conventions
@@ -44,6 +46,23 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
+add_message_files(
+  DIRECTORY msg
+  FILES
+  SatFix.msg
+  PathEstimate.msg
+  PathCost.msg
+)
+
+## Generate added messages and services with any dependencies listed here
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  sensor_msgs
+  mavros_msgs
+  geometry_msgs
+)
+
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
@@ -78,7 +97,13 @@ catkin_package(
 #  LIBRARIES dron_employee_ros
 #  CATKIN_DEPENDS std_msgs
 #  DEPENDS system_lib
-  CATKIN_DEPENDS dron_common_msgs mavros_msgs std_msgs
+  CATKIN_DEPENDS
+    message_runtime
+    std_msgs
+    mavros_msgs
+    sensor_msgs
+    geometry_msgs
+    rospy
 )
 
 ###########
