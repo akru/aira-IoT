@@ -1,3 +1,6 @@
-[submodule "ROS/aira_ros_bridge"]
-	path = ROS/aira_ros_bridge
-	url = git://github.com/aira-dao/aira_ros_bridge.git
+[submodule "src/aira_ros_bridge"]
+	path = src/aira_ros_bridge
+	url = https://github.com/airalab/aira_ros_bridge
+[submodule "core"]
+	path = core
+	url = https://github.com/airalab/core

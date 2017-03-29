@@ -1,4 +1,5 @@
-import 'ROS';
+pragma solidity ^0.4.4;
+import 'ROS/ROSBridge.sol';
 
 /***
  * This message defenition shoult be 
@@ -12,10 +13,10 @@ contract UInt32 is Message {
     }
 }
 
-contract SimplePub is ROSCompatible {
+contract Gripper is ROSBridge {
     Publisher      myPub;
     
-    function SampleContract() {
+    function Gripper() ROSBridge(msg.sender) {
         // Create a new publisher by topic name and type
         myPub = mkPublisher('/gripper', 'std_msgs/UInt32');
     }

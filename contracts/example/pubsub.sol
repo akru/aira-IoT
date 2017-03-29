@@ -1,4 +1,6 @@
-import 'ROS';
+pragma solidity ^0.4.4;
+
+import 'ROS/ROSBridge.sol';
 
 /***
  * This message defenition shoult be 
@@ -27,8 +29,8 @@ contract Integrator is MessageHandler {
     }
 }
 
-contract PubSub is ROSCompatible {
-    function PubSub() {
+contract PubSub is ROSBridge {
+    function PubSub() ROSBridge(msg.sender) {
         var pub = mkPublisher("/value", "std_msgs/Int64");
         var hdl = new Integrator(pub);
         mkSubscriber("/add", "std_msgs/Int64", hdl);

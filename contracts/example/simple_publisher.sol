@@ -1,4 +1,6 @@
-import 'ROS';
+pragma solidity ^0.4.4;
+
+import 'ROS/ROSBridge.sol';
 
 /***
  * This message defenition shoult be 
@@ -12,10 +14,10 @@ contract StdString is Message {
     }
 }
 
-contract SimplePub is ROSCompatible {
+contract SimplePub is ROSBridge {
     Publisher      myPub;
     
-    function SampleContract() {
+    function SimplePub() ROSBridge(msg.sender) {
         // Create a new publisher by topic name and type
         myPub = mkPublisher('/hello', 'std_msgs/String');
     }

@@ -1,3 +1,5 @@
+pragma solidity ^0.4.4;
+
 contract motherbase {
     address creator;
     int256  public homebaseLongitude;
@@ -6,7 +8,7 @@ contract motherbase {
     address public airwayAdminAddr;
 
 
-    modifier creatorCheck { if (msg.sender == creator) _ }
+    modifier creatorCheck { if (msg.sender == creator) _; }
 
     /* Functions */
     function motherbase(int256 _homebaseLongitude,
@@ -20,15 +22,11 @@ contract motherbase {
 
     function setDrone(address _droneAddr) creatorCheck returns(bool result) {
         droneActiveOf[_droneAddr] = true;
-        result true;
+        result = true;
     }
 
     function inactiveDrone(address _droneAddr) creatorCheck returns(bool result) {
         droneActiveOf[_droneAddr] = false;
-        result true;
+        result = true;
     }
-
-    
-
-
 }
