@@ -1,0 +1,5 @@
+build
+devel
+.cache
+abi
+*.pyc

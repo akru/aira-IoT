@@ -11,9 +11,9 @@ if __name__ == '__main__':
     result = rospy.Publisher('result', Bytes32, queue_size=5)
 
     def ipfs_hash(msg):
-        print(msg.data[2:])
+        print(msg.data)
         m = Bytes32()
-        m.data = b58decode(msg.data[2:], None)
+        m.data = b58decode(msg.data, None)[2:].encode('hex')
         print(m.data)
         result.publish(m)
 
