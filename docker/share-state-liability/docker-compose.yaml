@@ -1,0 +1,35 @@
+version: '2'
+
+services:
+  ipfs:
+    image: airalab/ipfs-cloud 
+    restart: always
+    expose:
+    - 5001
+    volumes:
+    - ipfsdata:/ipfs 
+
+  parity:
+    image: airalab/parity-cloud:unstable
+    restart: always
+    expose:
+    - 8545
+    environment:
+    - CHAIN=kovan
+
+  robot:
+    build: .
+    restart: always
+    depends_on:
+    - ipfs
+    - parity
+    volumes:
+    - ./state:/home/ros/state
+    environment:
+    - IPFS_NODE=ipfs
+    - PARITY_NODE=parity
+    - PERIOD=120
+    - LIABILITY_CONTRACT=0x9ae60D283a29277A7143C3207d400a446E5fE592
+
+volumes:
+  ipfsdata:
