@@ -28,8 +28,8 @@ services:
     environment:
     - IPFS_NODE=ipfs
     - PARITY_NODE=parity
-    - PERIOD=120
-    - LIABILITY_CONTRACT=0x9ae60D283a29277A7143C3207d400a446E5fE592
+    - PERIOD=60
+    - LIABILITY_CONTRACT=0x5fe40B387a03bDa5649d70Fb5be1D7A55Fb5BA42
 
 volumes:
   ipfsdata:

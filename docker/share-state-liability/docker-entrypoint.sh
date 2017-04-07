@@ -1,7 +1,7 @@
 #!/bin/bash
 
-sed -i "s/localhost:' + rpc_port/${PARITY_NODE}:' + rpc_port/" aira-IoT/src/aira_ros_bridge/aira_ros_bridge/lib/aira_bridge.js
-export IPFS="bin/ipfs --api=/ip4/${IPFS_NODE}/tcp/5001"
+sed -i "0,/localhost/{s/localhost/${PARITY_NODE}/}" aira-IoT/src/aira_ros_bridge/aira_ros_bridge/lib/aira_bridge.js
+export IPFS_IP=`getent hosts ${IPFS_NODE} | awk '{ print $1 }' | head -n1`
 
 if [ -z ${LIABILITY_CONTRACT} ]; then
     echo "ERROR: No liability contract specified! Terminate..."
@@ -22,5 +22,5 @@ rosrun robot_liability liability.py &
 
 while [ 1 ]; do
     sleep $PERIOD
-    $IPFS add state | awk '{print $2}' | xargs rostopic pub --once result_ipfs std_msgs/String
+    ipfs --api=/ip4/${IPFS_IP}/tcp/5001 add -rq state | tail -n1 | xargs rostopic pub --once result_ipfs std_msgs/String
 done
