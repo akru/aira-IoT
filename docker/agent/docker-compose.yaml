@@ -1,0 +1,38 @@
+version: '2'
+
+services:
+  ipfs:
+    image: airalab/ipfs-cloud 
+    restart: always
+    expose:
+    - 5001
+    volumes:
+    - ipfsdata:/ipfs 
+
+  parity:
+    image: airalab/parity-cloud:unstable
+    restart: always
+    expose:
+    - 8545
+    volumes:
+    - chaindata:/root/.local/share/io.parity.ethereum
+    environment:
+    - CHAIN=kovan
+
+  agent:
+    build: .
+    restart: always
+    depends_on:
+    - ipfs
+    - parity
+    ports:
+    - "8080:8080"
+    volumes:
+    - chaindata:/chain
+    environment:
+    - IPFS_NODE=ipfs
+    - PORT=8080
+
+volumes:
+  ipfsdata:
+  chaindata:
