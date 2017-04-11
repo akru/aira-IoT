@@ -6,6 +6,7 @@ services:
     restart: always
     expose:
     - 5001
+    - 80
     volumes:
     - ipfsdata:/ipfs 
 
@@ -26,12 +27,12 @@ services:
     - ipfs
     - parity
     ports:
-    - "8080:8080"
+    - "8080:80"
     volumes:
     - chaindata:/chain
     environment:
     - IPFS_NODE=ipfs
-    - PORT=8080
+    - DAPP_IPNS=QmQCt9UBAsSHa6BVCK6HYzJjrab63xiT2i6uoa751BVcJ4
 
 volumes:
   ipfsdata:
