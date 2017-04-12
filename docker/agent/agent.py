@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from flask import Flask, Response, request, redirect
+from flask import Flask, Response, redirect, stream_with_context
 from flask_restful import Resource, Api
 from ipfsapi import connect
 from os import environ
@@ -16,11 +16,9 @@ def index():
 @app.route('/ipns/<path:url>')
 def dapp(url):
     dapp_url = 'http://{0}/ipns/{1}'.format(environ['IPFS_NODE'], url)
-    r = requests.get(dapp_url, stream=True, params=request.args)
-    def generate():
-        for chunk in r.iter_content(1024):
-            yield chunk
-    return Response(generate(), headers=r.raw.headers.items())
+    req = requests.get(dapp_url, stream = True)
+    return Response(stream_with_context(req.iter_content()),
+                    content_type = req.headers['content-type'])
 
 class Descriptor(Resource):
     def get(self):
@@ -30,7 +28,7 @@ class Descriptor(Resource):
         desc['IPNS'] = ipfs.id()['ID']
         desc['address'] = open('/chain/address.txt', 'r').readline()[:-1]
 
-        return ipfs.add_json(desc)
+        return {'descriptor': ipfs.add_json(desc)}
 
 api.add_resource(Descriptor, '/api/v1/descriptor')
 
