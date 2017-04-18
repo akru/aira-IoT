@@ -31,7 +31,7 @@ contract RobotLiability is Liability, ROSBridge, MessageHandler{
                             address _token,
                             uint256 _cost)
             Liability(_promisor, _promisee, _token, _cost)
-            ROSBridge(_promisor) {
+            ROSBridge(_promisee) {
         resultSub = mkSubscriber("result", "robot_liability/Bytes32", this);
     }
 

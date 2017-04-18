@@ -16,10 +16,13 @@ console.log('Connected to Market: '+m.name());
 
 m.NewLiability({}, '', (e, r) => {
     if (!e) {
-        var l = web3.eth.contract(liability_abi).at(r.liability);
-        console.log('New Liability contract from market: '+r.liability);
+        var l = web3.eth.contract(liability_abi).at(r.args.liability);
+        console.log('New Liability contract from market: '+r.args.liability);
 
-        if (l.promisee == web3.eth.accounts[0])
-            console.log(exec('run-liability.sh '+r.liability));
+        if (l.promisee() == web3.eth.accounts[0]) {
+            console.log('Propmisee is '+l.promisee()+', its me! Running...');
+            exec('run-liability.sh '+r.args.liability);
+            console.log('Well done!');
+        }
     }
 });
