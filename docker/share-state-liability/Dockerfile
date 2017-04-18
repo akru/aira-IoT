@@ -5,6 +5,7 @@ RUN apt-get update \
 RUN ln -s /usr/bin/nodejs /usr/bin/node
 RUN useradd -m -g users ros
 RUN echo "ros ALL=(ALL) NOPASSWD: /usr/bin/apt-get" >> /etc/sudoers
+RUN npm install -g web3
 
 USER ros
 RUN rosdep update
@@ -25,5 +26,7 @@ RUN cd ~ && wget --no-check-certificate -O - -q https://dist.ipfs.io/go-ipfs/v0.
 VOLUME ["/home/ros/state"]
 WORKDIR /home/ros
 
+ADD ./listen-market.js /usr/local/bin/listen-market.js
+ADD ./run-liability.sh /usr/local/bin/run-liability.sh
 ADD ./docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["docker-entrypoint.sh"]
