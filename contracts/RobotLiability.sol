@@ -28,7 +28,7 @@ contract RobotLiability is Liability, ROSBridge, MessageHandler{
      */
     function RobotLiability(address _promisor,
                             address _promisee,
-                            ERC20 _token,
+                            address _token,
                             uint256 _cost)
             Liability(_promisor, _promisee, _token, _cost)
             ROSBridge(_promisor) {
