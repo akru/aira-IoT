@@ -23,6 +23,8 @@ RUN cd ~/aira-IoT/src/aira_ros_bridge/aira_ros_bridge && npm install
 
 RUN cd ~ && wget --no-check-certificate -O - -q https://dist.ipfs.io/go-ipfs/v0.4.8/go-ipfs_v0.4.8_linux-amd64.tar.gz | tar xzv go-ipfs/ipfs && mv go-ipfs/ipfs /usr/local/bin && rmdir go-ipfs
 
+RUN sed -i "0,/localhost/{s/localhost/parity/}" ~/aira-IoT/src/aira_ros_bridge/aira_ros_bridge/lib/aira_bridge.js
+
 VOLUME ["/home/ros/state"]
 WORKDIR /home/ros
 

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-sed -i "0,/localhost/{s/localhost/${PARITY_NODE}/}" aira-IoT/src/aira_ros_bridge/aira_ros_bridge/lib/aira_bridge.js
 export IPFS_IP=`getent hosts ${IPFS_NODE} | awk '{ print $1 }' | head -n1`
 
 if [ -z ${MARKET_CONTRACT} ]; then

@@ -28,8 +28,7 @@ services:
     environment:
     - IPFS_NODE=ipfs
     - PARITY_NODE=parity
-    - PERIOD=60
-    - MARKET_CONTRACT=0x65b2BB7468E27060070008ce80242e8419eF7b1D
+    - MARKET_CONTRACT=0x9Bf6F3cb65b1A759Dd850bEE7A43bbBa1C69c354
 
 volumes:
   ipfsdata:
