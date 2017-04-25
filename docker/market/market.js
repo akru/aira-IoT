@@ -1,28 +1,42 @@
 #!/usr/bin/env node
 
 const parity = process.env.PARITY_NODE;
-const market = require('/conf/market')['market'];
+const config = require('/conf/market');
 
 const market_abi = [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"asks","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_owner","type":"address"}],"name":"setOwner","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_beneficiary","type":"address"},{"name":"_promisee","type":"address"},{"name":"_price","type":"uint256"}],"name":"limitSell","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"asksLength","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"bids","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"hammer","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"bidsLength","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_id","type":"uint256"},{"name":"_beneficiary","type":"address"},{"name":"_promisee","type":"address"}],"name":"sellAt","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"destroy","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_id","type":"uint256"},{"name":"_candidates","type":"uint256"}],"name":"sellConfirm","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"priceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_price","type":"uint256"}],"name":"limitBuy","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"uint256"}],"name":"ordersOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_id","type":"uint256"}],"name":"buyAt","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_i","type":"uint256"}],"name":"getOrder","outputs":[{"name":"","type":"address[]"},{"name":"","type":"address[]"},{"name":"","type":"address"},{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_hammer","type":"address"}],"name":"setHammer","outputs":[],"payable":false,"type":"function"},{"inputs":[{"name":"_name","type":"string"}],"payable":false,"type":"constructor"},{"payable":true,"type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"order","type":"uint256"}],"name":"OpenAskOrder","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"order","type":"uint256"}],"name":"OpenBidOrder","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"order","type":"uint256"}],"name":"CloseAskOrder","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"order","type":"uint256"}],"name":"CloseBidOrder","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"order","type":"uint256"},{"indexed":true,"name":"beneficiary","type":"address"},{"indexed":true,"name":"promisee","type":"address"}],"name":"AskOrderCandidates","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"liability","type":"address"}],"name":"NewLiability","type":"event"}];
-const liability_abi = [{"constant":false,"inputs":[{"name":"_owner","type":"address"}],"name":"setOwner","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"cost","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"hammer","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"promisee","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_resultHash","type":"bytes32"}],"name":"publishHash","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"gasbase","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"gasprice","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"destroy","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"resultHash","outputs":[{"name":"","type":"bytes32"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_gasprice","type":"uint256"}],"name":"payment","outputs":[{"name":"","type":"bool"}],"payable":true,"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"promisor","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_hammer","type":"address"}],"name":"setHammer","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"token","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"inputs":[{"name":"_promisor","type":"address"},{"name":"_promisee","type":"address"},{"name":"_token","type":"address"},{"name":"_cost","type":"uint256"}],"payable":false,"type":"constructor"},{"payable":true,"type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"hash","type":"bytes32"}],"name":"Result","type":"event"}];
 
-const exec = require('child_process').execSync;
 var Web3 = require('web3');
 var web3 = new Web3(); 
 web3.setProvider(new web3.providers.HttpProvider('http://'+parity+':8545'));
+const me = web3.eth.accounts[0];
 
 var m = web3.eth.contract(market_abi).at(market);
 console.log('Connected to Market: '+m.name());
+console.log('My account: '+me);
 
-m.NewLiability({}, '', (e, r) => {
+m.OpenAskOrder({}, '', (e, r) => {
     if (!e) {
-        var l = web3.eth.contract(liability_abi).at(r.args.liability);
-        console.log('New Liability contract from market: '+r.args.liability);
-
-        if (l.promisee() == web3.eth.accounts[0]) {
-            console.log('Propmisee is '+l.promisee()+', its me! Running...');
-            exec('run-liability.sh '+r.args.liability);
-            console.log('Well done!');
+        const id = r.args.order;
+        console.log('Opened ASK order with ID='+id);
+        if (m.priceOf(id) >= config['ask']) {
+            console.log('Accepted price '+m.priceOf(id));
+            m.sellAt(id, config['beneficiary'], me, {from: me});
         }
     }
 });
+
+m.CloseBidOrder({}, '', (e, r) => {
+    if (!e) {
+        console.log('Closed BID order with ID='+r.args.order);
+        placeOrder();
+    }
+});
+
+placeOrder();
+
+function placeOrder() {
+    if (!m.odersOf(me).every((x) => { m.getOrder(x)[3] })) {
+        m.limitSell(config['beneficiary'], me, config['bid'], {from: me});
+        console.log('Order placed');
+    }
+}

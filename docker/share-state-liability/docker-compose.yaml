@@ -14,6 +14,8 @@ services:
     restart: always
     expose:
     - 8545
+    volumes:
+    - chaindata:/root/.local/share/io.parity.ethereum
     environment:
     - CHAIN=kovan
 
@@ -25,10 +27,37 @@ services:
     - parity
     volumes:
     - ./state:/home/ros/state
+    - confdata:/conf
     environment:
     - IPFS_NODE=ipfs
     - PARITY_NODE=parity
-    - MARKET_CONTRACT=0x9Bf6F3cb65b1A759Dd850bEE7A43bbBa1C69c354
+
+  agent:
+    build: ../agent
+    restart: always
+    depends_on:
+    - ipfs
+    - parity
+    ports:
+    - "8000:80"
+    volumes:
+    - chaindata:/chain
+    - confdata:/conf
+    environment:
+    - IPFS_NODE=ipfs
+    - DAPP_IPNS=QmQCt9UBAsSHa6BVCK6HYzJjrab63xiT2i6uoa751BVcJ4
+
+  market:
+    build: ../market
+    restart: always
+    depends_on:
+    - parity
+    volumes:
+    - confdata:/conf
+    environment:
+    - PARITY_NODE=parity
 
 volumes:
   ipfsdata:
+  chaindata:
+  confdata:

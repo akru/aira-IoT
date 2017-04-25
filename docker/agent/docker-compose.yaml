@@ -27,9 +27,10 @@ services:
     - ipfs
     - parity
     ports:
-    - "8080:80"
+    - "8000:80"
     volumes:
     - chaindata:/chain
+    - confdata:/conf
     environment:
     - IPFS_NODE=ipfs
     - DAPP_IPNS=QmQCt9UBAsSHa6BVCK6HYzJjrab63xiT2i6uoa751BVcJ4
@@ -37,3 +38,4 @@ services:
 volumes:
   ipfsdata:
   chaindata:
+  confdata:
