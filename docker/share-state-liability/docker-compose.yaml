@@ -31,6 +31,7 @@ services:
     environment:
     - IPFS_NODE=ipfs
     - PARITY_NODE=parity
+    - NODE_PATH=/usr/local/lib/node_modules
 
   agent:
     build: ../agent
@@ -45,7 +46,7 @@ services:
     - confdata:/conf
     environment:
     - IPFS_NODE=ipfs
-    - DAPP_IPNS=QmQCt9UBAsSHa6BVCK6HYzJjrab63xiT2i6uoa751BVcJ4
+    - DAPP_IPNS=QmU7RJWTj5ff43UceqrJXaBgVQwx2B39SNDJmx6aUapqsN
 
   market:
     build: ../market
@@ -56,6 +57,7 @@ services:
     - confdata:/conf
     environment:
     - PARITY_NODE=parity
+    - NODE_PATH=/usr/local/lib/node_modules
 
 volumes:
   ipfsdata:

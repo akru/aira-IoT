@@ -10,7 +10,7 @@ var web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://'+parity+':8545'));
 const me = web3.eth.accounts[0];
 
-var m = web3.eth.contract(market_abi).at(market);
+var m = web3.eth.contract(market_abi).at(config['market']);
 console.log('Connected to Market: '+m.name());
 console.log('My account: '+me);
 

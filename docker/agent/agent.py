@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from flask import Flask, Response, redirect, stream_with_context
-from flask_restful import Resource, Api
+from flask_restful import Resource, Api, reqparse
 from ipfsapi import connect
 from json import dumps
 from os import environ
@@ -12,7 +12,7 @@ api = Api(app)
 
 @app.route('/')
 def index():
-    return redirect('/ipns/{0}'.format(environ['DAPP_IPNS']))
+    return redirect('/ipns/{0}/'.format(environ['DAPP_IPNS']))
 
 @app.route('/ipns/<path:url>')
 def dapp(url):
@@ -32,7 +32,7 @@ class Descriptor(Resource):
         return {'descriptor': ipfs.add_json(desc)}
 
 class Market(Resource):
-    def __init(self):
+    def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('market')
         self.parser.add_argument('beneficiary')
@@ -40,7 +40,10 @@ class Market(Resource):
         self.parser.add_argument('ask')
 
     def get(self):
-        return open('/conf/market.json', 'r').read()
+        try:
+            return loads(open('/conf/market.json', 'r').readall())
+        except:
+            return {}
 
     def post(self):
         args = self.parser.parse_args()
