@@ -18,7 +18,7 @@ m.OpenAskOrder({}, '', (e, r) => {
     if (!e) {
         const id = r.args.order;
         console.log('Opened ASK order with ID='+id);
-        if (m.priceOf(id) >= config['ask']) {
+        if (m.priceOf(id) >= parseInt(config['ask'])) {
             console.log('Accepted price '+m.priceOf(id));
             m.sellAt(id, config['beneficiary'], me, {from: me});
         }
@@ -35,8 +35,13 @@ m.CloseBidOrder({}, '', (e, r) => {
 placeOrder();
 
 function placeOrder() {
-    if (!m.odersOf(me).every((x) => { m.getOrder(x)[3] })) {
-        m.limitSell(config['beneficiary'], me, config['bid'], {from: me});
-        console.log('Order placed');
+    console.log("Try to place the order...");
+    for (var i = 0; m.ordersOf(me, i) != 0; i += 1) {
+        if (!m.getOrder(m.ordersOf(me, i))) {
+            console.log("My open order found at "+i);
+            return;
+        }
     }
+    m.limitSell(config['beneficiary'], me, parseInt(config['bid']), {from: me});
+    console.log('Order placed');
 }
