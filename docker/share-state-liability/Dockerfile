@@ -1,7 +1,7 @@
 FROM ros
 
 RUN apt-get update \
-    && apt-get install -y git wget sudo syslinux libjpeg-dev libcairo-dev npm ros-kinetic-rosbridge-suite
+    && apt-get install -y git wget sudo libjpeg-dev libcairo-dev npm ros-kinetic-rosbridge-suite
 RUN ln -s /usr/bin/nodejs /usr/bin/node
 RUN useradd -m -g users ros
 RUN echo "ros ALL=(ALL) NOPASSWD: /usr/bin/apt-get" >> /etc/sudoers
