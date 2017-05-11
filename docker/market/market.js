@@ -37,7 +37,7 @@ placeOrder();
 function placeOrder() {
     console.log("Try to place the order...");
     for (var i = 0; m.ordersOf(me, i) != 0; i += 1) {
-        if (!m.getOrder(m.ordersOf(me, i))) {
+        if (!m.getOrder(m.ordersOf(me, i))[3]) {
             console.log("My open order found at "+i);
             return;
         }
