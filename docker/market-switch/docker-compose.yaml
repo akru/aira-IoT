@@ -1,0 +1,19 @@
+version: '2'
+
+services:
+  parity:
+    image: airalab/parity-cloud:unstable
+    restart: always
+    expose:
+    - 8545
+    environment:
+    - CHAIN=kovan
+
+  switch:
+    build: .
+    restart: always
+    depends_on:
+    - parity
+    environment:
+    - MARKET_LEFT_ADDRESS=0x8a343b2ba6F2C449d44c8B57A21a68D7f693CFec
+    - MARKET_RIGHT_ADDRESS=0x13a928a9fD9f68068B09f925cFC6767833B9ef08
