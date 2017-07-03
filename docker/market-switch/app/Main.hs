@@ -6,19 +6,27 @@ import Network.Ethereum.Web3.TH
 import Network.Ethereum.Web3
 
 import Control.Concurrent.Chan (Chan, newChan, readChan, writeChan)
+import qualified System.Hardware.Z21 as Z
 import Control.Monad.IO.Class (liftIO)
 import System.Environment (getEnv)
 import Data.String (fromString)
 
 [abiFrom|abi/Market.json|]
 
-enableLeft  = putStrLn "Enable LEFT railway!"
-enableRigth = putStrLn "Enable RIGHT railway!"
+enableLeft :: IO ()
+enableLeft = do
+    putStrLn "Enable LEFT railway!"
+    Z.runZ21 "192.168.0.111" 21105 $ Z.setLocoDrive (Z.Address 0 3) 0x10 0x06
+
+enableRigth :: IO ()
+enableRigth = do
+    putStrLn "Enable RIGHT railway!"
+    Z.runZ21 "192.168.0.111" 21105 $ Z.setLocoDrive (Z.Address 0 3) 0x10 0xF6
 
 data Parity
 
 instance Provider Parity where
-    rpcUri = return "http://parity:8545"
+    rpcUri = return "http://localhost:8545"
 
 marketMonitor :: Address
               -> Address
@@ -26,14 +34,22 @@ marketMonitor :: Address
 marketMonitor ml mr = do
     c <- liftIO newChan
 
+    liftIO (putStrLn "Connected to:")
+    liftIO . (putStr "Market A - " >>) . print =<< name ml
+    liftIO . (putStr "Market B - " >>) . print =<< name mr
+
     event ml $ \(OrderClosed o) -> do
         price <- priceOf ml o
-        liftIO $ writeChan c (Left price)
+        liftIO $ do
+            putStrLn $ "Order on market A closed, price = " ++ show price
+            writeChan c (Left price)
         return ContinueEvent
 
     event mr $ \(OrderClosed o) -> do
         price <- priceOf mr o
-        liftIO $ writeChan c (Right price)
+        liftIO $ do
+            putStrLn $ "Order on market B closed, price = " ++ show price
+            writeChan c (Right price)
         return ContinueEvent
 
     return c

@@ -4,3 +4,6 @@
 [submodule "core"]
 	path = core
 	url = https://github.com/airalab/core
+[submodule "docker/market-switch/z21-hs"]
+	path = docker/market-switch/z21-hs
+	url = https://github.com/akru/z21-hs
