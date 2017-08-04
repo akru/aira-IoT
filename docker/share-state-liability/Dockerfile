@@ -5,7 +5,7 @@ RUN apt-get update \
 RUN ln -s /usr/bin/nodejs /usr/bin/node
 RUN useradd -m -g users ros
 RUN echo "ros ALL=(ALL) NOPASSWD: /usr/bin/apt-get" >> /etc/sudoers
-RUN npm install -g web3
+RUN npm install -g web3@0.20.1
 
 USER ros
 RUN rosdep update
