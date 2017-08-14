@@ -46,7 +46,7 @@ services:
     - confdata:/conf
     environment:
     - IPFS_NODE=ipfs
-    - DAPP_IPNS=QmU7RJWTj5ff43UceqrJXaBgVQwx2B39SNDJmx6aUapqsN
+    - DAPP_IPNS=QmavrcmNvyfgGywBaSSX1nsFVzHDjmpTGWmD5QkDJ8RPkF
 
   market:
     build: ../market
