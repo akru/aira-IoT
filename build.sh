@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo Building contracts...
+echo Building packages...
 if [ ! -x .cache ]; then mkdir .cache; fi
 aira-deploy -O -I./src/aira_ros_bridge/aira_ros_bridge -I./core --abi
 
